@@ -1,0 +1,49 @@
+# --- INTELLIJ IDEA (Bắt buộc chặn để không lỗi máy bạn bè) ---
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# --- BUILD & COMPILED FILES (File biên dịch ra, không cần up) ---
+out/
+target/
+build/
+*.class
+
+# --- PACKAGE FILES (Giữ lại file jar trong lib để bạn chạy được) ---
+# Chúng ta chặn các file nén lớn, NHƯNG dùng dấu '!' để giữ lại file .jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+!lib/*.jar
+
+# --- CÁC IDE KHÁC (Giữ nguyên của bạn) ---
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+# --- QUAN TRỌNG: ẢNH TEST ---
+# Chúng ta KHÔNG viết dòng 'images/' vào đây.
+# Điều này đồng nghĩa với việc Git SẼ THEO DÕI và chia sẻ thư mục images/

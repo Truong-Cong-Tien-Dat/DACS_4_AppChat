@@ -1,0 +1,158 @@
+/* 1. Cài đặt chung cho nền tối */
+.root {
+    -fx-background-color: #000000; /* Đen tuyền như hình */
+    -fx-font-family: "Arial";
+}
+
+/* 2. Thanh Sidebar bên trái */
+.sidebar {
+    -fx-background-color: #111418; /* Xám rất đậm */
+    -fx-border-color: #2c3e50;
+    -fx-border-width: 0 1 0 0; /* Chỉ viền phải */
+}
+
+/* 3. Text Field (Ô nhập liệu) - Giống hình 3 */
+.dark-field {
+    -fx-background-color: #21262e; /* Xám đậm hơn nền */
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #6c757d;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-padding: 10 15 10 15;
+}
+.dark-field:focused {
+    -fx-border-color: #fd267a; /* Viền hồng khi chọn */
+    -fx-border-radius: 8;
+}
+
+/* 4. Nút Gradient (Đăng ký/Login) */
+.btn-gradient {
+    -fx-background-color: linear-gradient(to right, #fd267a, #ff6036); /* Màu Tinder chuẩn */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+.btn-gradient:hover {
+    -fx-opacity: 0.9;
+}
+
+/* 5. Các nút hành động tròn (Like, Nope, SuperLike) - Hình 1 */
+.action-btn {
+    -fx-background-radius: 50%; /* Tròn vo */
+    -fx-min-width: 60px;
+    -fx-min-height: 60px;
+    -fx-background-color: #111418;
+    -fx-border-color: #333;
+    -fx-border-radius: 50%;
+    -fx-border-width: 2;
+    -fx-cursor: hand;
+    -fx-text-fill: white; /* Màu icon */
+    -fx-font-size: 24px;
+}
+.action-btn-nope { -fx-text-fill: #ff4458; -fx-border-color: #ff4458; } /* X đỏ */
+.action-btn-like { -fx-text-fill: #21d07c; -fx-border-color: #21d07c; } /* Tim xanh */
+.action-btn-super { -fx-text-fill: #25a0f7; -fx-border-color: #25a0f7; } /* Sao xanh dương */
+
+/* 6. Grid chọn ảnh (Hình 3) */
+/* --- Styles cho các ô ảnh hồ sơ (Register/Profile) --- */
+.photo-placeholder {
+    -fx-background-color: #2f3136; /* Màu nền tối */
+    -fx-background-radius: 10;
+    -fx-border-color: #40444b;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-text-fill: #aebabf; /* Màu chữ dấu '+' hoặc '✓' */
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 0; /* Không có khoảng trống giữa text và graphic */
+    -fx-padding: 0; /* Loại bỏ padding mặc định */
+}
+
+/* Kiểu cho ô ảnh đã có (có background image) */
+.photo-placeholder-has-image {
+    -fx-background-size: cover; /* Ảnh nền cover toàn bộ nút */
+    -fx-background-position: center; /* Căn giữa ảnh nền */
+    -fx-background-repeat: no-repeat;
+    -fx-text-fill: transparent; /* Ẩn dấu '+' hoặc '✓' khi có ảnh */
+    -fx-border-color: #21d07c; /* Viền xanh khi có ảnh */
+}
+
+/* Thêm hiệu ứng hover */
+.photo-placeholder:hover {
+    -fx-background-color: #36393f;
+    -fx-border-color: #5865f2; /* Viền xanh dương khi hover */
+}
+/* --- CHAT STYLES --- */
+
+/* Bong bóng chat chung */
+/* --- CHAT STYLES NÂNG CẤP --- */
+
+/* List View Chat - Xóa màu nền mặc định xấu xí */
+.chat-list-view {
+    -fx-background-color: #2f3136;
+    -fx-control-inner-background: #2f3136;
+    -fx-padding: 5;
+    -fx-border-color: #202225;
+    -fx-border-width: 0 1 0 0;
+}
+
+/* Tên người trong danh sách */
+.chat-list-view .list-cell {
+    -fx-text-fill: #eeeeee; /* Chữ trắng sáng */
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 10 12 10; /* Giãn cách rộng hơn */
+    -fx-border-color: #40444b;
+    -fx-border-width: 0 0 1 0;
+}
+
+.chat-list-view .list-cell:filled:selected,
+.chat-list-view .list-cell:filled:hover {
+    -fx-background-color: #42464d; /* Màu khi di chuột sáng hơn */
+    -fx-background-radius: 5;
+}
+
+/* 2. Khu vực Chat Chính - Màu xám trung tính (Dễ đọc tin nhắn) */
+#chatArea {
+    -fx-background-color: #36393f; /* Sáng hơn màu đen */
+}
+
+/* 3. Ô nhập liệu Chat */
+#messageInput {
+    -fx-background-color: #40444b;
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+}
+
+/* Bong bóng chat chung */
+.chat-bubble {
+    -fx-padding: 12px 16px 12px 16px; /* Padding rộng hơn */
+    -fx-font-size: 15px;
+    -fx-max-width: 350px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 2);
+}
+
+/* Tin nhắn CỦA TÔI (Gradient Hồng Tinder) */
+ .bubble-me {
+     -fx-background-color: linear-gradient(to right, #fd267a, #ff6036);
+     -fx-text-fill: white;
+     -fx-background-radius: 18 18 4 18;
+     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 2, 0, 0, 1);
+ }
+
+ /* Tin nhắn CỦA HỌ (Màu xám sáng hơn nền) */
+ .bubble-other {
+     -fx-background-color: #5865f2; /* Màu xanh Discord hoặc để #4f545c nếu thích xám */
+     -fx-text-fill: white;
+     -fx-background-radius: 18 18 18 4;
+     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 2, 0, 0, 1);
+ }
+
+/* Hình ảnh trong chat */
+.chat-image-view {
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 8, 0, 0, 2);
+    -fx-cursor: hand;
+}

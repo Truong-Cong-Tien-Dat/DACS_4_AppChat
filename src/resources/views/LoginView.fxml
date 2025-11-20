@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="20.0" styleClass="root" stylesheets="@../styles/tinder-theme.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="client.controllers.LoginController">
+
+    <padding><Insets bottom="40" left="40" right="40" top="40" /></padding>
+
+    <Label text="D&amp;D Cupid🔥" textFill="#fe3c72">
+        <font><Font name="System Bold" size="32.0" /></font>
+    </Label>
+
+    <VBox spacing="10.0" maxWidth="350">
+        <Label text="Tên đăng nhập" textFill="WHITE" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="usernameField" promptText="Nhập username..." styleClass="dark-field" />
+
+        <Label text="Mật khẩu" textFill="WHITE" style="-fx-font-weight: bold;"/>
+        <PasswordField fx:id="passwordField" promptText="Nhập password..." styleClass="dark-field" />
+    </VBox>
+
+    <Label fx:id="errorLabel" textFill="#ff4458" wrapText="true" />
+
+    <VBox spacing="10.0" maxWidth="350">
+        <Button text="ĐĂNG NHẬP" onAction="#handleLogin" styleClass="btn-gradient" maxWidth="Infinity" prefHeight="45"/>
+        <Button text="Chưa có tài khoản? Đăng ký" onAction="#goToRegister" style="-fx-background-color: transparent; -fx-text-fill: #0095f6; -fx-underline: true;" />
+    </VBox>
+
+</VBox>

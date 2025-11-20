@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.image.ImageView?>
+<StackPane prefHeight="750.0" prefWidth="900.0"
+           styleClass="root" stylesheets="@../styles/tinder-theme.css"
+           xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="client.controllers.MessagesController">
+<BorderPane >
+
+    <left>
+        <VBox prefWidth="300.0" spacing="10.0" style="-fx-background-color: #111418; -fx-border-color: #333; -fx-border-width: 0 1 0 0;">
+            <padding><Insets bottom="10" left="10" right="10" top="10" /></padding>
+
+            <Label text="Matches" textFill="WHITE"><font><Font name="System Bold" size="24.0" /></font></Label>
+
+            <TextField fx:id="searchField" promptText="🔍 Tìm kiếm..." styleClass="dark-field" />
+
+            <ListView fx:id="matchesListView" styleClass="chat-list-view" VBox.vgrow="ALWAYS" />
+
+            <Button maxWidth="Infinity" onAction="#backToHome" style="-fx-background-color: #333; -fx-text-fill: white;" text="Quay lại Trang chủ" />
+        </VBox>
+    </left>
+
+    <center>
+        <VBox fx:id="chatArea" spacing="0.0" style="-fx-background-color: #000000;">
+
+            <HBox alignment="CENTER_LEFT" style="-fx-padding: 15; -fx-border-color: #333; -fx-border-width: 0 0 1 0;">
+                <Label fx:id="currentPartnerLabel" text="Chọn người để chat" styleClass="header-label" textFill="WHITE">
+                    <font><Font name="System Bold" size="18.0" /></font>
+                </Label>
+            </HBox>
+
+            <ListView fx:id="chatListView" styleClass="chat-list-view" VBox.vgrow="ALWAYS" />
+
+            <HBox alignment="CENTER" spacing="10.0" style="-fx-padding: 10;">
+                <Button onAction="#handleSendFile" style="-fx-background-color: transparent; -fx-text-fill: #0095f6; -fx-font-size: 20px; -fx-cursor: hand;" text="📎" />
+
+                <TextField fx:id="messageInput" promptText="Nhắn tin..." styleClass="dark-field" HBox.hgrow="ALWAYS" />
+
+                <Button defaultButton="true" onAction="#handleSend" styleClass="btn-gradient" text="Gửi" />
+            </HBox>
+        </VBox>
+    </center>
+
+</BorderPane>
+
+<VBox fx:id="imageOverlay" alignment="CENTER" style="-fx-background-color: rgba(0,0,0,0.9);" visible="false" onMouseClicked="#closeImageOverlay">
+        <ImageView fx:id="enlargedImageView" preserveRatio="true" fitHeight="700" fitWidth="900" />
+        <Label text="Nhấn ra ngoài để đóng" textFill="WHITE" style="-fx-padding: 20; -fx-font-size: 16px;"/>
+</VBox>
+        </StackPane>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="800.0" prefWidth="1000.0" styleClass="root" stylesheets="@../styles/tinder-theme.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="client.controllers.HomeController">
+
+    <left>
+        <VBox prefWidth="350.0" spacing="0.0" styleClass="sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: linear-gradient(to right, #fd267a, #ff6036); -fx-padding: 15;">
+                <Circle fx:id="myAvatarCircle" radius="20.0" fill="WHITE" />
+                <Label fx:id="myFullNameLabel" text="Đang tải..." textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 16px;" />
+
+                <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                    <Button text="Hồ sơ" style="-fx-background-color: rgba(0,0,0,0.2); -fx-text-fill: white; -fx-cursor: hand;" onAction="#goToProfile"/>
+                </HBox>
+            </HBox>
+
+            <HBox spacing="20.0" style="-fx-padding: 15;">
+                <Label text="Matches" textFill="#fd267a" style="-fx-font-weight: bold; -fx-border-color: #fd267a; -fx-border-width: 0 0 2 0;"/>
+                <Button text="Messages" onAction="#goToMessages" style="-fx-background-color: transparent; -fx-text-fill: #888888; -fx-cursor: hand; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <ListView fx:id="matchesListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-control-inner-background: #111418;"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox alignment="CENTER" style="-fx-background-color: #000000;">
+
+            <StackPane fx:id="cardContainer" onMouseClicked="#handleCardClick"
+                       VBox.vgrow="ALWAYS" maxWidth="400" maxHeight="600" style="-fx-padding: 20;">
+
+                <ImageView fx:id="profileImageView" fitHeight="600.0" fitWidth="400.0" pickOnBounds="true" preserveRatio="true" />
+
+                <VBox mouseTransparent="true" alignment="BOTTOM_LEFT" spacing="5.0"
+                      style="-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.9), transparent); -fx-background-radius: 0 0 15 15;">
+
+                    <padding><Insets bottom="20.0" left="20.0" right="20.0" top="100.0" /></padding>
+
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label fx:id="nameAgeLabel" text="Đang tải..." textFill="WHITE">
+                            <font><Font name="System Bold" size="28.0" /></font>
+                        </Label>
+                    </HBox>
+
+                    <Label fx:id="bioLabel" text="..." textFill="#dddddd" wrapText="true" />
+                </VBox>
+
+            </StackPane>
+
+            <HBox alignment="CENTER" spacing="30.0" style="-fx-padding: 0 0 30 0;">
+
+                <Button onAction="#handleRefresh" styleClass="action-btn" style="-fx-text-fill: #f5b748; -fx-border-color: #f5b748;" text="↺" />
+
+                <Button onAction="#handleNope" styleClass="action-btn, action-btn-nope" text="✖" prefWidth="70" prefHeight="70"/>
+
+                <Button onAction="#handleLike" styleClass="action-btn, action-btn-like" text="♥" prefWidth="70" prefHeight="70"/>
+
+            </HBox>
+        </VBox>
+    </center>
+
+</BorderPane>

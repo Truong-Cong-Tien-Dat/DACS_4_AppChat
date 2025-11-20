@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<HBox styleClass="root" stylesheets="@../styles/tinder-theme.css"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="client.controllers.ProfileController">
+
+    <VBox alignment="CENTER_LEFT" minWidth="400.0" spacing="10.0">
+        <padding><Insets bottom="20.0" left="40.0" right="40.0" top="20.0" /></padding>
+
+        <Label text="Chỉnh sửa Hồ sơ" textFill="WHITE">
+            <font><Font name="System Bold" size="32.0" /></font>
+        </Label>
+
+        <VBox spacing="5.0">
+            <Label text="Tên hiển thị" textFill="WHITE" style="-fx-font-weight: bold;" />
+            <TextField fx:id="nameField" styleClass="dark-field" />
+        </VBox>
+
+        <VBox spacing="5.0">
+            <Label text="Tuổi" textFill="WHITE" style="-fx-font-weight: bold;" />
+            <TextField fx:id="ageField" styleClass="dark-field" />
+        </VBox>
+
+        <HBox spacing="20.0">
+            <VBox spacing="5.0">
+                <Label text="Giới tính" textFill="WHITE" />
+                <HBox spacing="10.0">
+                    <RadioButton fx:id="genderMale" text="Nam" textFill="WHITE">
+                        <toggleGroup><ToggleGroup fx:id="genderGroup"/></toggleGroup>
+                    </RadioButton>
+                    <RadioButton fx:id="genderFemale" text="Nữ" textFill="WHITE" toggleGroup="$genderGroup"/>
+                </HBox>
+            </VBox>
+            <VBox spacing="5.0">
+                <Label text="Quan tâm tới" textFill="WHITE" />
+                <HBox spacing="10.0">
+                    <RadioButton fx:id="seekingMale" text="Nam" textFill="WHITE">
+                        <toggleGroup><ToggleGroup fx:id="seekingGroup"/></toggleGroup>
+                    </RadioButton>
+                    <RadioButton fx:id="seekingFemale" text="Nữ" textFill="WHITE" toggleGroup="$seekingGroup"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <VBox spacing="5.0">
+            <Label text="Sở thích" textFill="WHITE" style="-fx-font-weight: bold;" />
+            <TextField fx:id="interestsField" styleClass="dark-field" />
+        </VBox>
+
+        <VBox spacing="5.0">
+            <Label text="Thói quen" textFill="WHITE" style="-fx-font-weight: bold;" />
+            <TextField fx:id="habitsField" styleClass="dark-field" />
+        </VBox>
+
+        <VBox spacing="5.0">
+            <Label text="Tình trạng MQH" textFill="WHITE" style="-fx-font-weight: bold;" />
+            <TextField fx:id="relationshipField" styleClass="dark-field" />
+        </VBox>
+
+        <VBox spacing="5.0">
+            <Label text="Giới thiệu (Bio)" textFill="WHITE" style="-fx-font-weight: bold;" />
+            <TextField fx:id="bioField" styleClass="dark-field" />
+        </VBox>
+
+        <Button text="LƯU THAY ĐỔI" onAction="#handleUpdate" styleClass="btn-gradient" maxWidth="Infinity" prefHeight="45.0"/>
+
+        <Button text="Quay lại trang chủ" onAction="#backToHome" style="-fx-background-color: transparent; -fx-text-fill: #888;" />
+    </VBox>
+
+    <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="20.0" style="-fx-background-color: #111418;">
+
+        <Label text="Ảnh hồ sơ" textFill="#aebabf"><font><Font size="16.0" /></font></Label>
+
+        <GridPane hgap="15.0" vgap="15.0" alignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints prefWidth="130.0" />
+                <ColumnConstraints prefWidth="130.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints prefHeight="180.0" />
+                <RowConstraints prefHeight="180.0" />
+            </rowConstraints>
+
+            <Button fx:id="photoBtn1" onAction="#choosePhoto" styleClass="photo-placeholder" text="+" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Button fx:id="photoBtn2" onAction="#choosePhoto" styleClass="photo-placeholder" text="+" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Button fx:id="photoBtn3" onAction="#choosePhoto" styleClass="photo-placeholder" text="+" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <Button fx:id="photoBtn4" onAction="#choosePhoto" styleClass="photo-placeholder" text="+" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        </GridPane>
+
+        <Label text="Nhấn vào ô để thay đổi ảnh." textFill="#6c757d"/>
+
+        <Button text="ĐĂNG XUẤT" onAction="#handleLogout"
+                style="-fx-background-color: #2c3e50; -fx-text-fill: #ff4458; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand;"
+                prefWidth="200" prefHeight="40"/>
+
+    </VBox>
+
+</HBox>
