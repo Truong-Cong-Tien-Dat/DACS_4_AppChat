@@ -28,43 +28,27 @@ public class MessagesController {
     @FXML private ListView<String> matchesListView;
     @FXML private Label currentPartnerLabel;
     @FXML private ListView<ChatMessage> chatListView;
-    @FXML private TextField messageInput;
+    @FXML private TextField messageInputField; // Tên đúng trong FXML mới là messageInputField
     @FXML private VBox chatArea;
     @FXML private VBox imageOverlay;
     @FXML private ImageView enlargedImageView;
 
-    // Map để ánh xạ: Username -> Full Name (Để hiển thị cho đẹp)
+    // Map để ánh xạ: Username -> Full Name
     private Map<String, String> userMap = new HashMap<>();
 
     private ObservableList<String> matchesList = FXCollections.observableArrayList();
     private Map<String, ObservableList<ChatMessage>> chatHistories = new HashMap<>();
-    private String currentPartner; // QUAN TRỌNG: Cái này phải lưu USERNAME
+    private String currentPartner;
 
     public void initialize() {
-        // Setup danh sách Match
+        // 1. Setup danh sách Match
         FilteredList<String> filteredMatches = new FilteredList<>(matchesList, p -> true);
         matchesListView.setItems(filteredMatches);
 
-        // --- 1. CÀI ĐẶT CELL FACTORY ĐỂ HIỂN THỊ TÊN THẬT ---
-        matchesListView.setCellFactory(param -> new ListCell<String>() {
-            @Override
-            protected void updateItem(String username, boolean empty) {
-                super.updateItem(username, empty);
-                if (empty || username == null) {
-                    setText(null);
-                    setStyle("-fx-background-color: transparent;");
-                } else {
-                    // Lấy tên thật từ Map, nếu không có thì dùng username
-                    String displayName = userMap.getOrDefault(username, username);
-                    setText(displayName);
+        // --- GỌI HÀM SETUP GIAO DIỆN DANH SÁCH ---
+        setupMatchesListView();
 
-                    // Style chữ trắng, to rõ
-                    setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-padding: 10px; -fx-background-color: transparent; -fx-font-weight: bold;");
-                }
-            }
-        });
-
-        // Setup ô tìm kiếm (Tìm theo tên hiển thị)
+        // 2. Setup ô tìm kiếm
         searchField.textProperty().addListener((obs, oldValue, newValue) -> {
             filteredMatches.setPredicate(username -> {
                 if (newValue == null || newValue.isEmpty()) return true;
@@ -73,16 +57,39 @@ public class MessagesController {
             });
         });
 
-        // Khi chọn người chat
+        // 3. Khi chọn người chat
         matchesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) openChat(newVal);
         });
 
-        // Setup danh sách Chat (Renderer)
+        // 4. Setup danh sách Chat (Renderer bong bóng)
         chatListView.setCellFactory(param -> new ChatCellRenderer(this));
 
-        // Tải danh sách ngay khi mở
+        // 5. Tải danh sách ngay khi mở
         loadMatches();
+    }
+
+    // --- HÀM BẠN ĐANG TÌM KIẾM ---
+    private void setupMatchesListView() {
+        matchesListView.setCellFactory(param -> new ListCell<String>() {
+            @Override
+            protected void updateItem(String username, boolean empty) {
+                super.updateItem(username, empty);
+                if (empty || username == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setStyle("-fx-background-color: transparent;");
+                } else {
+                    // Lấy tên thật từ Map
+                    String displayName = userMap.getOrDefault(username, username);
+                    setText(displayName);
+
+                    // --- QUAN TRỌNG: MÀU CHỮ ĐEN (#050505) VÌ NỀN LÀ TRẮNG ---
+                    // BỎ "-fx-background-color: transparent;" đi
+                    setStyle("-fx-text-fill: #262626; -fx-font-size: 15px; -fx-padding: 12px; -fx-font-weight: bold;");
+                }
+            }
+        });
     }
 
     private void loadMatches() {
@@ -99,14 +106,13 @@ public class MessagesController {
             if ("MATCH_LIST".equals(status)) {
                 JSONArray arr = response.getJSONArray("matches");
                 matchesList.clear();
-                userMap.clear(); // Xóa map cũ
+                userMap.clear();
 
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject obj = arr.getJSONObject(i);
                     String username = obj.getString("username");
                     String fullName = obj.optString("full_name", username);
 
-                    // Lưu vào Map và List
                     userMap.put(username, fullName);
                     matchesList.add(username);
                 }
@@ -116,7 +122,6 @@ public class MessagesController {
                 String content = response.getString("content");
                 String typeStr = response.optString("type", "TEXT");
 
-                // Cập nhật UI ngay nếu đang chat với người đó
                 addMessageToHistory(from, new ChatMessage(from, content, false,
                         "IMAGE".equals(typeStr) ? ChatMessage.Type.IMAGE : ChatMessage.Type.TEXT));
             }
@@ -153,12 +158,12 @@ public class MessagesController {
     private void openChat(String username) {
         this.currentPartner = username;
 
-        // --- HIỂN THỊ TÊN THẬT TRÊN TIÊU ĐỀ ---
+        // Hiển thị tên thật trên tiêu đề (Chữ Đen cho nền Trắng)
         String displayName = userMap.getOrDefault(username, username);
         currentPartnerLabel.setText(displayName);
-
+        currentPartnerLabel.setStyle("-fx-text-fill: #050505;"); // Đảm bảo tiêu đề màu đen
+        currentPartnerLabel.setStyle("-fx-text-fill: #262626; -fx-font-size: 18px; -fx-font-weight: bold;");
         chatArea.setDisable(false);
-
         chatListView.setItems(getChatListForUser(username));
 
         JSONObject req = new JSONObject();
@@ -167,9 +172,10 @@ public class MessagesController {
         ClientApp.getInstance().getNetworkClient().sendRequest(req);
     }
 
+    // --- HÀM XỬ LÝ TIN NHẮN (SỬA LỖI FXML) ---
     @FXML
-    private void handleSend() {
-        String text = messageInput.getText().trim();
+    private void handleSendMessage() {
+        String text = messageInputField.getText().trim(); // Lấy từ messageInputField
         if (text.isEmpty() || currentPartner == null) return;
 
         JSONObject req = new JSONObject()
@@ -180,7 +186,7 @@ public class MessagesController {
         ClientApp.getInstance().getNetworkClient().sendRequest(req);
 
         addMessageToHistory(currentPartner, new ChatMessage("Bạn", text, true, ChatMessage.Type.TEXT));
-        messageInput.clear();
+        messageInputField.clear();
     }
 
     @FXML

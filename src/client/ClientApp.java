@@ -19,13 +19,10 @@ public class ClientApp extends Application {
     private Stage primaryStage;
     private NetworkClient networkClient;
 
-    // (MỚI) KHAI BÁO BIẾN LƯU TRỮ HỒ SƠ
     private JSONObject userProfile;
     private String myUsername;
 
-    // Controller hiện tại đang hoạt động (để nhận phản hồi từ server)
     private Object currentController;
-
     public static void main(String[] args) {
         launch(args);
     }
@@ -34,42 +31,32 @@ public class ClientApp extends Application {
     public void start(Stage stage) {
         instance = this;
         this.primaryStage = stage;
-
-        // 1. Kết nối Server
         networkClient = new NetworkClient("localhost", 12345);
-        new Thread(networkClient).start(); // Chạy luồng nền
-
-        // 2. Mở màn hình Login
+        new Thread(networkClient).start();
         switchScene("LoginView.fxml");
 
-        primaryStage.setTitle("Tinder Clone App");
+        primaryStage.setTitle("D&D App chat");
         primaryStage.show();
     }
 
     public static ClientApp getInstance() { return instance; }
     public NetworkClient getNetworkClient() { return networkClient; }
 
-    // (MỚI) GETTER để các Controller khác lấy hồ sơ
     public JSONObject getUserProfile() { return userProfile; }
     public String getMyUsername() { return myUsername; }
-    // public String getMyUsername() { return myUsername; } // Dùng cho logic Chat
 
-    /**
-     * Hàm chuyển cảnh (Scene)
-     */
+
     public void switchScene(String fxmlFile) {
         try {
-            // Sửa lỗi: Thêm "/resources/views/"
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/views/" + fxmlFile));
             Parent root = loader.load();
 
             currentController = loader.getController();
-            System.out.println("Đã chuyển sang màn hình: " + fxmlFile); // <--- THÊM LOG NÀY
+            System.out.println("Đã chuyển sang màn hình: " + fxmlFile);
             System.out.println("Controller hiện tại là: " + currentController.getClass().getName()); // <--- THÊM LOG NÀY
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
 
-            // Nếu chuyển sang Home, cần tải dữ liệu ban đầu
             if (currentController instanceof HomeController) {
                 ((HomeController) currentController).initData();
             }
@@ -79,14 +66,11 @@ public class ClientApp extends Application {
         }
     }
     public void logout() {
-        // 1. Xóa dữ liệu người dùng
         this.userProfile = null;
         this.myUsername = null;
 
-        // 2. Chuyển về màn hình đăng nhập
         System.out.println("Đăng xuất thành công.");
 
-        // Chạy trên luồng JavaFX để đảm bảo an toàn
         Platform.runLater(() -> {
             switchScene("LoginView.fxml");
         });
@@ -98,11 +82,9 @@ public class ClientApp extends Application {
 
         Platform.runLater(() -> {
             try {
-                // 1. Xử lý cho màn hình LOGIN
                 if (currentController instanceof LoginController) {
                     LoginController loginCtrl = (LoginController) currentController;
                     if ("LOGIN_SUCCESS".equals(status)) {
-                        // (MỚI) LƯU HỒ SƠ VÀ USERNAME
                         JSONObject profile = response.getJSONObject("profile");
                         this.userProfile = profile;
                         this.myUsername = profile.getString("username");
@@ -115,7 +97,6 @@ public class ClientApp extends Application {
                     }
                 }
 
-                // 2. Xử lý cho màn hình REGISTER
                 else if (currentController instanceof RegisterController) {
                     RegisterController regCtrl = (RegisterController) currentController;
                     if ("REGISTER_SUCCESS".equals(status)) {
@@ -125,7 +106,6 @@ public class ClientApp extends Application {
                     }
                 }
 
-                // 3. Xử lý cho màn hình HOME (QUAN TRỌNG: Nhận list profile)
                 else if (currentController instanceof HomeController) {
                     HomeController homeCtrl = (HomeController) currentController;
                     homeCtrl.handleServerResponse(response);
@@ -135,10 +115,8 @@ public class ClientApp extends Application {
                     msgCtrl.handleServerResponse(response);
                 }
 
-                // --- (MỚI) 5. THÊM PHẦN NÀY CHO PROFILE ---
                 else if (currentController instanceof client.controllers.ProfileController) {
-                    // ProfileController có thể cần nhận thông báo cập nhật thành công
-                    // Ví dụ: hiển thị Alert thành công
+
                 }
             } catch (Exception e) {
                 System.err.println("LỖI GIAO DIỆN (Exception): " + e.getMessage());

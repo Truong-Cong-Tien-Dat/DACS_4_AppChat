@@ -165,7 +165,6 @@ public class HomeController {
             nameAgeLabel.setText("Hết hồ sơ");
             bioLabel.setText("Nhấn nút Quay lại (↺) để làm mới.");
             profileImageView.setImage(null);
-            // Reset mảng ảnh để không click được nữa
             currentPhotos = new String[4];
         }
     }

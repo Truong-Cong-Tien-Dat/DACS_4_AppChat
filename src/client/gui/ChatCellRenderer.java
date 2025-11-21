@@ -18,7 +18,6 @@ import java.nio.file.StandardCopyOption;
 
 public class ChatCellRenderer extends ListCell<ChatMessage> {
 
-    // Cần tham chiếu đến Controller để gọi hàm Zoom ảnh
     private MessagesController controller;
 
     public ChatCellRenderer(MessagesController controller) {
@@ -52,7 +51,7 @@ public class ChatCellRenderer extends ListCell<ChatMessage> {
                     // 1. Sự kiện CLICK CHUỘT (Zoom & Menu)
                     imageView.setOnMouseClicked(e -> {
                         if (e.getButton() == MouseButton.PRIMARY) {
-                            // Chuột trái: Phóng to ảnh (Gọi sang Controller)
+
                             controller.showImageOverlay(imgObj);
                         }
                     });
@@ -68,7 +67,6 @@ public class ChatCellRenderer extends ListCell<ChatMessage> {
 
                     contextMenu.getItems().addAll(saveItem, copyItem, new SeparatorMenuItem(), deleteItem);
 
-                    // Gắn menu vào ảnh
                     imageView.setOnContextMenuRequested(e ->
                             contextMenu.show(imageView, e.getScreenX(), e.getScreenY())
                     );
@@ -79,21 +77,23 @@ public class ChatCellRenderer extends ListCell<ChatMessage> {
                     bubble.getChildren().add(new Label("❌ Lỗi ảnh"));
                 }
             }
-            // --- XỬ LÝ VĂN BẢN ---
             else {
                 Label contentLabel = new Label(msg.getContent());
                 contentLabel.setWrapText(true);
                 contentLabel.setStyle("-fx-text-fill: white; -fx-font-size: 15px;");
                 bubble.getChildren().add(contentLabel);
             }
-
-            // Căn lề & Style
+            bubble.getStyleClass().clear();
+            if (msg.getType() == ChatMessage.Type.IMAGE) {
+                bubble.getStyleClass().add("image-bubble-container");
+            } else {
+                bubble.getStyleClass().add("chat-bubble");
+                bubble.getStyleClass().add(msg.isFromMe() ? "bubble-me" : "bubble-other");
+            }
             if (msg.isFromMe()) {
                 container.setAlignment(Pos.CENTER_RIGHT);
-                bubble.getStyleClass().addAll("chat-bubble", "bubble-me");
             } else {
                 container.setAlignment(Pos.CENTER_LEFT);
-                bubble.getStyleClass().addAll("chat-bubble", "bubble-other");
             }
 
             container.getChildren().add(bubble);
@@ -102,7 +102,6 @@ public class ChatCellRenderer extends ListCell<ChatMessage> {
         }
     }
 
-    // Hàm lưu ảnh
     private void saveImageToDisk(File sourceFile) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Lưu hình ảnh");

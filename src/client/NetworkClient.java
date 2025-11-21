@@ -29,8 +29,6 @@ public class NetworkClient implements Runnable {
             while ((jsonResponse = in.readLine()) != null) {
                 System.out.println("Server: " + jsonResponse);
                 JSONObject response = new JSONObject(jsonResponse);
-
-                // Gọi về ClientApp để cập nhật giao diện
                 if (ClientApp.getInstance() != null) {
                     ClientApp.getInstance().handleServerResponse(response);
                 }
