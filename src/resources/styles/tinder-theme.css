@@ -62,10 +62,12 @@
     -fx-border-width: 2;
     -fx-border-radius: 10;
     -fx-text-fill: #aebabf;
-    -fx-font-size: 24px;
+    -fx-font-size: 30px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
     -fx-padding: 0;
+    -fx-alignment: center;
+    -fx-content-display: center;
 }
 
 /* ==========================================================================
@@ -207,4 +209,77 @@
     -fx-background-color: transparent;
     -fx-cursor: hand;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 3, 0, 0, 1);
+}
+/* --- 1. LOGO --- */
+.title-label {
+    -fx-text-fill: linear-gradient(to right, #fd267a, #ff6036); /* Chữ màu gradient */
+    -fx-effect: dropshadow(three-pass-box, rgba(253, 38, 122, 0.4), 10, 0, 0, 0); /* Đổ bóng nhẹ */
+}
+
+/* --- 2. Ô NHẬP LIỆU (Mềm mại hơn) --- */
+.dark-field {
+    -fx-background-color: #21262e;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #6c757d;
+    -fx-background-radius: 12; /* Bo tròn nhiều hơn */
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-padding: 12 15 12 15; /* Tăng khoảng cách bên trong */
+}
+
+.dark-field:focused {
+    -fx-background-color: #21262e;
+    -fx-border-color: #fd267a; /* Viền hồng khi chọn */
+    -fx-border-radius: 12;
+}
+
+/* --- 3. NÚT LOGIN (Nổi bật) --- */
+.btn-gradient {
+    -fx-background-color: linear-gradient(to right, #fd267a, #ff6036);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25; /* Bo tròn như viên thuốc */
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(253, 38, 122, 0.3), 10, 0, 0, 5);
+}
+.btn-gradient:hover {
+    -fx-opacity: 0.9;
+    -fx-translate-y: -1; /* Hiệu ứng nhấc lên nhẹ khi di chuột */
+}
+.btn-gradient:pressed {
+    -fx-translate-y: 1;
+}
+
+/* --- 4. CÁC NÚT PHỤ (Link text) --- */
+.link-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #aaaaaa; /* Màu xám */
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-padding: 0; /* Bỏ padding để giống text */
+    -fx-underline: true;
+}
+.link-btn:hover {
+    -fx-text-fill: white;
+}
+
+.link-btn-accent {
+    -fx-background-color: transparent;
+    -fx-text-fill: #fd267a; /* Màu hồng chủ đạo */
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-padding: 0;
+    -fx-font-weight: bold;
+}
+.link-btn-accent:hover {
+    -fx-text-fill: #ff6036;
+    -fx-underline: true;
+}
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
 }

@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
@@ -14,23 +15,32 @@
 
     <padding><Insets bottom="40" left="40" right="40" top="40" /></padding>
 
-    <Label text="D&amp;D Cupid🔥" textFill="#fe3c72">
-        <font><Font name="System Bold" size="32.0" /></font>
+    <Label text="D&amp;D Cupid 🔥" styleClass="title-label">
+        <font><Font name="System Bold" size="36.0" /></font>
     </Label>
 
-    <VBox spacing="10.0" maxWidth="350">
-        <Label text="Tên đăng nhập" textFill="WHITE" style="-fx-font-weight: bold;"/>
-        <TextField fx:id="usernameField" promptText="Nhập username..." styleClass="dark-field" />
+    <VBox spacing="15.0" maxWidth="320">
+        <VBox spacing="5.0">
+            <Label text="Tên đăng nhập" textFill="#dddddd" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+            <TextField fx:id="usernameField" promptText="Nhập username..." styleClass="dark-field" />
+        </VBox>
 
-        <Label text="Mật khẩu" textFill="WHITE" style="-fx-font-weight: bold;"/>
-        <PasswordField fx:id="passwordField" promptText="Nhập password..." styleClass="dark-field" />
+        <VBox spacing="5.0">
+            <Label text="Mật khẩu" textFill="#dddddd" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+            <PasswordField fx:id="passwordField" promptText="Nhập password..." styleClass="dark-field" />
+        </VBox>
     </VBox>
 
-    <Label fx:id="errorLabel" textFill="#ff4458" wrapText="true" />
+    <Label fx:id="errorLabel" textFill="#ff4458" wrapText="true" style="-fx-font-style: italic;"/>
 
-    <VBox spacing="10.0" maxWidth="350">
+    <VBox spacing="15.0" maxWidth="320" alignment="CENTER">
         <Button text="ĐĂNG NHẬP" onAction="#handleLogin" styleClass="btn-gradient" maxWidth="Infinity" prefHeight="45"/>
-        <Button text="Chưa có tài khoản? Đăng ký" onAction="#goToRegister" style="-fx-background-color: transparent; -fx-text-fill: #0095f6; -fx-underline: true;" />
+
+        <HBox alignment="CENTER" spacing="20">
+            <Button text="Quên mật khẩu?" onAction="#goToForgot" styleClass="link-btn" />
+            <Label text="|" textFill="#444444" />
+            <Button text="Đăng ký ngay" onAction="#goToRegister" styleClass="link-btn-accent" />
+        </HBox>
     </VBox>
 
 </VBox>

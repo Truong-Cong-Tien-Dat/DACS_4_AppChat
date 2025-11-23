@@ -11,13 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class AIService {
-
-    /**
-     * Lấy danh sách gợi ý các username cho một user cụ thể.
-     * Logic: Content-Based Filtering (Lọc dựa trên nội dung).
-     */
-    // THAY THẾ HÀM CŨ BẰNG HÀM MỚI NÀY TRONG AIService.java
-
     public static List<String> getRecommendations(String username) {
         System.out.println("AI: Bắt đầu tính toán gợi ý (2-way) cho: " + username);
 

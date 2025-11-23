@@ -25,7 +25,9 @@ public class LoginController {
 
         ClientApp.getInstance().getNetworkClient().sendRequest(req);
     }
-
+    @FXML void goToForgot() {
+        ClientApp.getInstance().switchScene("ForgotPassView.fxml");
+    }
     @FXML
     private void goToRegister() {
         ClientApp.getInstance().switchScene("RegisterView.fxml");

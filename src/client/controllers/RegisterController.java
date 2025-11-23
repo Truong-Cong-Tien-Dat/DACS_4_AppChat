@@ -59,7 +59,6 @@ public class RegisterController {
                 return;
             }
 
-            // (MỚI) Đếm số lượng ảnh
             int photoCount = 0;
             for(String photo : photoFiles) {
                 if(photo != null && !photo.isEmpty()) photoCount++;
@@ -69,33 +68,35 @@ public class RegisterController {
                 return;
             }
 
-            // 3. Tạo JSONObject để gửi Server
-            JSONObject req = new JSONObject();
-            req.put("action", "REGISTER");
-            req.put("full_name", fullName);
-            req.put("username", username);
-            req.put("password", password);
-            req.put("age", age);
-            req.put("gender", gender);
-            req.put("seeking", seeking);
-            req.put("interests", interests);
-            req.put("habits", habits);
-            req.put("relationship_status", relationshipStatus);
-            req.put("bio", bio);
 
-            // Thêm tên file ảnh vào request
+            JSONObject profile = new JSONObject();
+            profile.put("username", username);
+            profile.put("password", password);
+            profile.put("full_name", fullName);
+            profile.put("age", age);
+            profile.put("gender", gender);
+            profile.put("seeking", seeking);
+            profile.put("interests", interests);
+            profile.put("habits", habits);
+            profile.put("relationship_status", relationshipStatus);
+            profile.put("bio", bio);
+
             for(int i=0; i < photoFiles.length; i++) {
-                req.put("photo" + (i + 1), photoFiles[i] != null ? photoFiles[i] : "");
+                profile.put("photo" + (i + 1), photoFiles[i] != null ? photoFiles[i] : "");
             }
 
-            // 4. Gửi request và xử lý phản hồi
-            ClientApp.getInstance().getNetworkClient().sendRequest(req);
+            ClientApp.getInstance().getNetworkClient().sendRequest(profile);
 
             // Xóa form sau khi đăng ký thành công (hoặc chuyển cảnh)
             showAlert("Thành công", "Đăng ký tài khoản " + username + " thành công!");
             clearForm(); // (MỚI) Thêm hàm này
             ClientApp.getInstance().switchScene("LoginView.fxml");
 
+            JSONObject req = new JSONObject();
+            req.put("action", "REGISTER");
+            req.put("profile", profile);
+
+            ClientApp.getInstance().getNetworkClient().sendRequest(req);
         } catch (NumberFormatException e) {
             showAlert("Lỗi", "Tuổi phải là số!");
         } catch (Exception e) {

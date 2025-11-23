@@ -77,6 +77,31 @@ public class ClientHandler implements Runnable {
                     ServerApp.removeClient(this.username);
                     this.username = null;
                     break;
+                case "REQ_FORGOT_PASS":
+                    String uName = request.getString("username");
+                    String code = DatabaseService.generateRecoveryCode(uName);
+                    JSONObject res1 = new JSONObject();
+                    if (code != null) {
+                        System.out.println(">>> MÃ KHÔI PHỤC CHO " + uName + ": " + code + " <<<");
+                        res1.put("status", "FORGOT_PASS_SENT");
+                    } else {
+                        res1.put("status", "FORGOT_PASS_FAIL");
+                        res1.put("message", "Tên đăng nhập không tồn tại.");
+                    }
+                    sendMessage(res1.toString());
+                    break;
+
+                case "REQ_RESET_PASS":
+                    boolean ok = DatabaseService.resetPassword(
+                            request.getString("username"),
+                            request.getString("code"),
+                            request.getString("new_password")
+                    );
+                    JSONObject res2 = new JSONObject();
+                    res2.put("status", ok ? "RESET_PASS_SUCCESS" : "RESET_PASS_FAIL");
+                    if (!ok) res2.put("message", "Mã xác nhận không đúng.");
+                    sendMessage(res2.toString());
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -8,10 +8,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,12 +34,12 @@ public class MessagesController {
     @FXML private ListView<String> matchesListView;
     @FXML private Label currentPartnerLabel;
     @FXML private ListView<ChatMessage> chatListView;
-    @FXML private TextField messageInputField; // Tên đúng trong FXML mới là messageInputField
+    @FXML private TextField messageInputField;
     @FXML private VBox chatArea;
     @FXML private VBox imageOverlay;
     @FXML private ImageView enlargedImageView;
+    @FXML private ImageView partnerAvatarView;
 
-    // Map để ánh xạ: Username -> Full Name
     private Map<String, String> userMap = new HashMap<>();
 
     private ObservableList<String> matchesList = FXCollections.observableArrayList();
@@ -44,8 +50,6 @@ public class MessagesController {
         // 1. Setup danh sách Match
         FilteredList<String> filteredMatches = new FilteredList<>(matchesList, p -> true);
         matchesListView.setItems(filteredMatches);
-
-        // --- GỌI HÀM SETUP GIAO DIỆN DANH SÁCH ---
         setupMatchesListView();
 
         // 2. Setup ô tìm kiếm
@@ -69,24 +73,56 @@ public class MessagesController {
         loadMatches();
     }
 
-    // --- HÀM BẠN ĐANG TÌM KIẾM ---
+    // --- 1. CÀI ĐẶT GIAO DIỆN DANH SÁCH (CÓ AVATAR) ---
     private void setupMatchesListView() {
         matchesListView.setCellFactory(param -> new ListCell<String>() {
+            private final ImageView imageView = new ImageView();
+            private final Label nameLabel = new Label();
+            private final HBox hBox = new HBox(10);
+
+            {
+                // Cài đặt style cho HBox
+                hBox.setAlignment(Pos.CENTER_LEFT);
+                hBox.setPadding(new Insets(5, 0, 5, 5));
+
+                // Cài đặt Avatar
+                imageView.setFitWidth(45);
+                imageView.setFitHeight(45);
+                imageView.setPreserveRatio(true);
+                // Bo tròn Avatar
+                Circle clip = new Circle(22.5, 22.5, 22.5);
+                imageView.setClip(clip);
+
+                // Cài đặt Tên
+                nameLabel.setStyle("-fx-text-fill: #262626; -fx-font-size: 15px; -fx-font-weight: bold;");
+
+                hBox.getChildren().addAll(imageView, nameLabel);
+            }
+
             @Override
             protected void updateItem(String username, boolean empty) {
                 super.updateItem(username, empty);
+
                 if (empty || username == null) {
-                    setText(null);
                     setGraphic(null);
+                    setText(null);
                     setStyle("-fx-background-color: transparent;");
                 } else {
-                    // Lấy tên thật từ Map
                     String displayName = userMap.getOrDefault(username, username);
-                    setText(displayName);
+                    nameLabel.setText(displayName);
+                    String photoName = "default_avatar.png";
+                    // TODO: String photoName = avatarMap.getOrDefault(username, "default_avatar.png");
 
-                    // --- QUAN TRỌNG: MÀU CHỮ ĐEN (#050505) VÌ NỀN LÀ TRẮNG ---
-                    // BỎ "-fx-background-color: transparent;" đi
-                    setStyle("-fx-text-fill: #262626; -fx-font-size: 15px; -fx-padding: 12px; -fx-font-weight: bold;");
+                    try {
+                        File file = new File("images/" + photoName);
+                        String imagePath = file.exists() ? file.toURI().toString() : "file:images/default_avatar.png";
+                        imageView.setImage(new Image(imagePath));
+                    } catch (Exception e) {
+                        imageView.setImage(null);
+                    }
+
+                    setGraphic(hBox);
+                    setText(null);
                 }
             }
         });
@@ -150,10 +186,25 @@ public class MessagesController {
                     chatListView.scrollTo(items.size() - 1);
                 }
             }
+            else if ("PARTNER_PROFILE".equals(status)) {
+                JSONObject profile = response.getJSONObject("profile");
+
+                Platform.runLater(() -> {
+                    try {
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/views/ProfileView.fxml"));
+                        Parent root = loader.load();
+
+                        ProfileController ctrl = loader.getController();
+                        ctrl.setupProfile(profile, false); // false = Khách xem
+
+                        // Mở cửa sổ mới hoặc thay thế Scene hiện tại
+                        ClientApp.getInstance().getPrimaryStage().getScene().setRoot(root);
+                    } catch (Exception e) { e.printStackTrace(); }
+                });
+            }
+
         });
     }
-
-    // --- CÁC HÀM LOGIC ---
 
     private void openChat(String username) {
         this.currentPartner = username;
@@ -166,13 +217,14 @@ public class MessagesController {
         chatArea.setDisable(false);
         chatListView.setItems(getChatListForUser(username));
 
+        String photoName = "default_avatar.png";
         JSONObject req = new JSONObject();
         req.put("action", "GET_CHAT_HISTORY");
         req.put("with_username", username);
         ClientApp.getInstance().getNetworkClient().sendRequest(req);
     }
 
-    // --- HÀM XỬ LÝ TIN NHẮN (SỬA LỖI FXML) ---
+
     @FXML
     private void handleSendMessage() {
         String text = messageInputField.getText().trim(); // Lấy từ messageInputField
@@ -219,6 +271,15 @@ public class MessagesController {
             chatHistories.put(username, FXCollections.observableArrayList());
         }
         return chatHistories.get(username);
+    }
+    @FXML
+    private void viewPartnerProfile() {
+        if (currentPartner == null) return;
+
+        JSONObject req = new JSONObject();
+        req.put("action", "GET_PROFILE_BY_USERNAME"); // Cần thêm case này ở Server
+        req.put("target_username", currentPartner);
+        ClientApp.getInstance().getNetworkClient().sendRequest(req);
     }
 
     private void addMessageToHistory(String username, ChatMessage msg) {

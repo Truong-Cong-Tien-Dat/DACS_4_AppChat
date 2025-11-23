@@ -9,6 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,8 +55,13 @@ public class HomeController {
             clip.setArcHeight(30);
             profileImageView.setClip(clip);
         }
-
-        // 3. Tải danh sách hồ sơ
+        String avatarPath = "images/" + myProfile.optString("photo1", "default_avatar.png");
+        try {
+            File file = new File(avatarPath);
+            if (file.exists()) {
+                myAvatarCircle.setFill(new ImagePattern(new Image(file.toURI().toString())));
+            }
+        } catch (Exception e) {}
         loadProfiles();
     }
 

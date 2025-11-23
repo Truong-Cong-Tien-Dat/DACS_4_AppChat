@@ -53,21 +53,24 @@
 
         <HBox spacing="20.0">
             <VBox spacing="5.0">
-                <Label text="Giới tính của bạn" textFill="WHITE" />
+                <Label text="Giới tính" textFill="WHITE" />
                 <HBox spacing="10.0">
-                    <RadioButton fx:id="genderMaleRadio" text="Nam" textFill="WHITE" selected="true">
+                    <RadioButton fx:id="genderMale" text="Nam" textFill="WHITE" selected="true">
                         <toggleGroup><ToggleGroup fx:id="genderGroup"/></toggleGroup>
                     </RadioButton>
-                    <RadioButton fx:id="genderFemaleRadio" text="Nữ" textFill="WHITE" toggleGroup="$genderGroup"/>
+
+                    <RadioButton fx:id="genderFemale" text="Nữ" textFill="WHITE" toggleGroup="$genderGroup"/>
                 </HBox>
             </VBox>
+
             <VBox spacing="5.0">
                 <Label text="Quan tâm tới" textFill="WHITE" />
                 <HBox spacing="10.0">
-                    <RadioButton fx:id="seekingMaleRadio" text="Nam" textFill="WHITE">
+                    <RadioButton fx:id="seekingMale" text="Nam" textFill="WHITE">
                         <toggleGroup><ToggleGroup fx:id="seekingGroup"/></toggleGroup>
                     </RadioButton>
-                    <RadioButton fx:id="seekingFemaleRadio" text="Nữ" textFill="WHITE" toggleGroup="$seekingGroup" selected="true"/>
+
+                    <RadioButton fx:id="seekingFemale" text="Nữ" textFill="WHITE" toggleGroup="$seekingGroup" selected="true"/>
                 </HBox>
             </VBox>
         </HBox>
@@ -84,7 +87,7 @@
 
         <VBox spacing="5.0">
             <Label text="Tình trạng MQH" textFill="WHITE" style="-fx-font-weight: bold;" />
-            <TextField fx:id="relationshipStatusField" text="Độc thân" styleClass="dark-field" />
+            <TextField fx:id="relationshipField" text="Độc thân" styleClass="dark-field" />
         </VBox>
 
 
@@ -100,19 +103,22 @@
     </VBox>
 
     <VBox alignment="CENTER" HBox.hgrow="ALWAYS" spacing="10.0" style="-fx-background-color: #111418;">
+        <padding>
+            <Insets top="20" right="50" bottom="20" left="50"/>
+        </padding>
         <Label text="Ảnh hồ sơ" textFill="#aebabf">
             <font><Font size="16.0" /></font>
         </Label>
 
         <GridPane hgap="15.0" vgap="15.0" alignment="CENTER">
             <columnConstraints>
-                <ColumnConstraints prefWidth="100.0" />
-                <ColumnConstraints prefWidth="100.0" />
+                <ColumnConstraints prefWidth="150.0" />
+                <ColumnConstraints prefWidth="150.0" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints prefHeight="140.0" />
-                <RowConstraints prefHeight="140.0" />
-                <RowConstraints prefHeight="140.0" /> </rowConstraints>
+                <RowConstraints prefHeight="180.0" />
+                <RowConstraints prefHeight="180.0" />
+                <RowConstraints prefHeight="180.0" /> </rowConstraints>
 
             <Button fx:id="photoBtn1" onAction="#choosePhoto" styleClass="photo-placeholder" text="+" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
             <Button fx:id="photoBtn2" onAction="#choosePhoto" styleClass="photo-placeholder" text="+" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0"/>

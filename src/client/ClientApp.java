@@ -76,6 +76,11 @@ public class ClientApp extends Application {
         });
     }
 
+    public void updateUserProfileLocal(JSONObject newProfile) {
+        this.userProfile = newProfile;
+        System.out.println("ClientApp: Đã cập nhật profile cục bộ.");
+    }
+
     public void handleServerResponse(JSONObject response) {
         String status = response.optString("status");
         System.out.println("Client xử lý response: " + status);
@@ -118,10 +123,17 @@ public class ClientApp extends Application {
                 else if (currentController instanceof client.controllers.ProfileController) {
 
                 }
+                else if (currentController instanceof client.controllers.ForgotPassController) {
+                    client.controllers.ForgotPassController forgotCtrl = (client.controllers.ForgotPassController) currentController;
+                    forgotCtrl.handleServerResponse(response);
+                }
             } catch (Exception e) {
                 System.err.println("LỖI GIAO DIỆN (Exception): " + e.getMessage());
                 e.printStackTrace();
             }
         });
+    }
+    public Stage getPrimaryStage() {
+        return primaryStage;
     }
 }

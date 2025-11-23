@@ -3,35 +3,105 @@ package client.controllers;
 import client.ClientApp;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays; // Thêm import này
+import java.util.Arrays;
 
 public class ProfileController {
 
+    // --- VIEW MODE (Xem) ---
+    @FXML private ScrollPane viewModePane;
+    // Tìm dòng này và thêm viewPhoto1 vào
+    @FXML private ImageView coverImageView, avatarImageView, viewPhoto1, viewPhoto2, viewPhoto3, viewPhoto4;
+    @FXML private Label viewNameLabel, viewAgeLabel, viewGenderLabel, viewInterestsLabel, viewHabitsLabel, viewRelationLabel, viewBioLabel;
+    @FXML private Button btnEditProfile;
+    @FXML private Button btnChangeAvatar;
+    // --- EDIT MODE (Sửa) ---
+    @FXML private HBox editModePane;
     @FXML private TextField nameField, ageField, interestsField, habitsField, relationshipField, bioField;
-    @FXML private ToggleGroup genderGroup, seekingGroup;
     @FXML private RadioButton genderMale, genderFemale, seekingMale, seekingFemale;
-
-    // (MỚI) Dùng mảng Button để dễ quản lý các ô ảnh
+    @FXML private ToggleGroup genderGroup, seekingGroup;
     @FXML private Button photoBtn1, photoBtn2, photoBtn3, photoBtn4;
-    private Button[] photoButtons; // Mảng này sẽ chứa các nút trên
 
-    private String[] photoFiles = new String[4];
+    private Button[] photoButtons;
+    private String[] photoFiles = new String[5];
+    private JSONObject profileData;
+    private boolean isMe = true;
 
     public void initialize() {
-        // (MỚI) Khởi tạo mảng photoButtons
         photoButtons = new Button[]{photoBtn1, photoBtn2, photoBtn3, photoBtn4};
-
-        loadCurrentData();
+        // Nếu mở từ Home (mặc định), thì là xem chính mình
+        setupProfile(ClientApp.getInstance().getUserProfile(), true);
     }
 
-    private void loadCurrentData() {
-        JSONObject p = ClientApp.getInstance().getUserProfile();
+    public void setupProfile(JSONObject profile, boolean isMe) {
+        this.profileData = profile;
+        this.isMe = isMe;
+
+        loadViewModeData();
+
+        btnEditProfile.setVisible(isMe);
+        viewModePane.setVisible(true);
+        editModePane.setVisible(false);
+    }
+
+    // --- 1. HIỂN THỊ CHẾ ĐỘ XEM ---
+    private void loadViewModeData() {
+        if (profileData == null) return;
+
+        viewNameLabel.setText(profileData.optString("full_name", "Tên Người Dùng"));
+        viewAgeLabel.setText(String.valueOf(profileData.optInt("age", 18)));
+        viewGenderLabel.setText(profileData.optString("gender", "Nam"));
+        viewInterestsLabel.setText(profileData.optString("interests", "---"));
+        viewHabitsLabel.setText(profileData.optString("habits", "---"));
+        viewRelationLabel.setText(profileData.optString("relationship_status", "---"));
+        viewBioLabel.setText(profileData.optString("bio", "---"));
+
+        String photo1 = profileData.optString("photo1");
+        loadPhotoToView(photo1, avatarImageView);
+        loadPhotoToView(photo1, viewPhoto1);
+        loadPhotoToView(profileData.optString("photo2"), viewPhoto2);      // Ảnh 2
+        loadPhotoToView(profileData.optString("photo3"), viewPhoto3);      // Ảnh 3
+        loadPhotoToView(profileData.optString("photo4"), viewPhoto4);
+
+        if (btnChangeAvatar != null) btnChangeAvatar.setVisible(isMe);
+    }
+
+    private void loadPhotoToView(String photoName, ImageView view) {
+        try {
+            view.setImage(null); // Reset trước
+            if (photoName != null && !photoName.isEmpty()) {
+                File file = new File("images/" + photoName);
+                if (file.exists()) {
+                    view.setImage(new Image(file.toURI().toString()));
+                }
+            }
+        } catch (Exception e) {}
+    }
+
+    // --- 2. HIỂN THỊ CHẾ ĐỘ SỬA ---
+    @FXML
+    private void showEditMode() {
+        loadEditModeData();
+        viewModePane.setVisible(false);
+        editModePane.setVisible(true);
+    }
+
+    @FXML
+    private void hideEditMode() {
+        viewModePane.setVisible(true);
+        editModePane.setVisible(false);
+    }
+
+    private void loadEditModeData() {
+        JSONObject p = ClientApp.getInstance().getUserProfile(); // Luôn lấy data mới nhất của mình
         if (p == null) return;
 
         nameField.setText(p.optString("full_name", ""));
@@ -47,38 +117,28 @@ public class ProfileController {
         String seeking = p.optString("seeking", "Nữ");
         if ("Nam".equals(seeking)) seekingMale.setSelected(true); else seekingFemale.setSelected(true);
 
-        // 3. Load Ảnh (Hiển thị ảnh lên nút)
-        // (MỚI) Lặp qua mảng photoButtons
-        for (int i = 0; i < photoFiles.length; i++) {
-            String photoName = p.optString("photo" + (i + 1), "");
-            photoFiles[i] = photoName; // Lưu tên file vào mảng
-            updatePhotoButtonUI(photoButtons[i], photoName); // Cập nhật UI
+        // SỬA LỖI NULL POINTER Ở ĐÂY: Dùng biến 'p' thay vì 'profileData'
+        for(int i=0; i<4; i++) {
+            String name = p.optString("photo" + (1+i));
+            photoFiles[i] = name;
+            updatePhotoButtonUI(photoButtons[i], name);
         }
     }
 
-    // (MỚI) Hàm helper để cập nhật UI của nút ảnh
     private void updatePhotoButtonUI(Button btn, String fileName) {
         if (fileName != null && !fileName.isEmpty()) {
             File file = new File("images/" + fileName);
             if (file.exists()) {
-                // Set ảnh nền cho nút
                 btn.setStyle("-fx-background-image: url('" + file.toURI().toString() + "'); " +
-                        "-fx-background-size: cover; -fx-background-position: center; " +
-                        "-fxbackground-repeat: no-repeat; -fx-border-color: #21d07c; " +
-                        "-fx-background-radius: 10; -fx-border-radius: 10;");
-                btn.setText(""); // Xóa dấu "+"
-            } else {
-                // Nếu file không tồn tại, reset về trạng thái chưa có ảnh
-                btn.getStyleClass().setAll("button", "photo-placeholder");
-                btn.setText("+");
+                        "-fx-background-size: cover; -fx-background-position: center; -fx-background-repeat: no-repeat;");
+                btn.setText("");
             }
         } else {
-            // Chưa có ảnh
-            btn.getStyleClass().setAll("button", "photo-placeholder");// Reset về CSS mặc định
-            btn.setText("+");
+            btn.setStyle(null); btn.getStyleClass().setAll("photo-placeholder"); btn.setText("+");
         }
     }
 
+    // --- 3. XỬ LÝ CẬP NHẬT ---
     @FXML
     private void handleUpdate() {
         try {
@@ -103,12 +163,21 @@ public class ProfileController {
             p.put("photo3", photoFiles[2]);
             p.put("photo4", photoFiles[3]);
 
+            // Gửi Server
             JSONObject req = new JSONObject().put("action", "UPDATE_PROFILE").put("profile", p);
             ClientApp.getInstance().getNetworkClient().sendRequest(req);
 
-            showAlert("Thành công", "Đã cập nhật hồ sơ!");
+            // Cập nhật Local
+            ClientApp.getInstance().updateUserProfileLocal(p);
 
-        } catch (NumberFormatException e) { // Thêm bắt lỗi nhập tuổi
+            // Cập nhật lại View Mode
+            this.profileData = p;
+            loadViewModeData();
+
+            showAlert("Thành công", "Đã cập nhật hồ sơ!");
+            hideEditMode(); // Quay về chế độ xem
+
+        } catch (NumberFormatException e) {
             showAlert("Lỗi", "Tuổi phải là số nguyên!");
         } catch (Exception e) {
             showAlert("Lỗi", "Dữ liệu không hợp lệ: " + e.getMessage());
@@ -118,13 +187,14 @@ public class ProfileController {
     @FXML
     private void choosePhoto(javafx.event.ActionEvent event) {
         Button clickedBtn = (Button) event.getSource();
-        // Cách tìm index thông minh hơn (nếu bạn dùng array photoButtons)
-        int slot = -1;
-        if (clickedBtn == photoBtn1) slot = 0;
-        else if (clickedBtn == photoBtn2) slot = 1;
-        else if (clickedBtn == photoBtn3) slot = 2;
-        else if (clickedBtn == photoBtn4) slot = 3;
 
+        // Tìm index của nút trong mảng photoButtons
+        int slot = -1;
+        for (int i = 0; i < photoButtons.length; i++) {
+            if (clickedBtn == photoButtons[i]) {
+                slot = i; break;
+            }
+        }
         if (slot == -1) return;
 
         FileChooser fc = new FileChooser();
@@ -136,18 +206,57 @@ public class ProfileController {
                 String username = ClientApp.getInstance().getMyUsername();
                 String ext = file.getName().substring(file.getName().lastIndexOf('.'));
 
-                // --- SỬA LỖI TẠI ĐÂY: THÊM TIMESTAMP ---
+                // Thêm timestamp để tránh cache
                 String newName = username + "_photo" + (slot + 1) + "_" + System.currentTimeMillis() + ext;
 
                 File dest = new File("images/" + newName);
                 if(!dest.getParentFile().exists()) dest.getParentFile().mkdir();
                 Files.copy(file.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-                // Cập nhật UI và biến
-                photoFiles[slot] = newName; // Lưu tên mới vào mảng để tí nữa bấm "Lưu thay đổi" nó gửi đi
-
-                // Cập nhật hiển thị ngay lập tức
+                // Lưu tên file mới
+                photoFiles[slot] = newName;
                 updatePhotoButtonUI(clickedBtn, newName);
+
+            } catch (Exception e) { e.printStackTrace(); }
+        }
+    }
+    @FXML
+    private void quickChangeAvatar() {
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg"));
+        File file = fc.showOpenDialog(null);
+
+        if (file != null) {
+            try {
+                String username = ClientApp.getInstance().getMyUsername();
+                String ext = file.getName().substring(file.getName().lastIndexOf('.'));
+                String newName = username + "_photo1_" + System.currentTimeMillis() + ext; // Luôn là photo1
+
+                File dest = new File("images/" + newName);
+                if(!dest.getParentFile().exists()) dest.getParentFile().mkdir();
+                Files.copy(file.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                JSONObject p = ClientApp.getInstance().getUserProfile();
+                p.put("photo1", newName);
+
+                JSONObject req = new JSONObject().put("action", "UPDATE_PROFILE").put("profile", p);
+                ClientApp.getInstance().getNetworkClient().sendRequest(req);
+
+                ClientApp.getInstance().updateUserProfileLocal(p);
+                this.profileData = p;
+                loadViewModeData();
+
+                ClientApp.getInstance().updateUserProfileLocal(p); // Lưu vào ClientApp
+                this.profileData = p;
+                loadViewModeData(); // Reload giao diện Profile
+
+                // --- (MỚI) 5. THÊM DÒNG NÀY ĐỂ CẬP NHẬT TRANG CHỦ ---
+                // Vì trang chủ dùng chung dữ liệu trong ClientApp, nên ta chỉ cần ép nó reload lại
+                // Tuy nhiên, vì Home đang ẩn nên ta không gọi trực tiếp được.
+                // Cách đơn giản nhất: Gửi thông báo Alert thành công,
+                // khi người dùng bấm "Back to Home", Home sẽ tự reload (do ta đã code initData ở switchScene).
+
+                System.out.println("Đã đổi Avatar thành công!");
 
             } catch (Exception e) { e.printStackTrace(); }
         }
@@ -157,7 +266,6 @@ public class ProfileController {
     private void handleLogout() {
         JSONObject req = new JSONObject().put("action", "LOGOUT");
         ClientApp.getInstance().getNetworkClient().sendRequest(req);
-
         ClientApp.getInstance().logout();
     }
 

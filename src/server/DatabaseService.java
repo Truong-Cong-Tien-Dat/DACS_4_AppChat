@@ -327,22 +327,31 @@ public class DatabaseService {
         }
         return matches;
     }
-    /**
-     * Cập nhật hồ sơ người dùng
-     */
+
     public static boolean updateUserProfile(String username, JSONObject profileData) {
-        // TODO: Xây dựng câu lệnh UPDATE phức tạp hơn
-        // Ví dụ:
-        String sql = "UPDATE users SET full_name = ?, age = ?, bio = ? WHERE username = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        // Thêm gender và seeking vào câu lệnh UPDATE
+        String sql = "UPDATE users SET full_name = ?, age = ?, gender = ?, seeking = ?, interests = ?, habits = ?, relationship_status = ?, bio = ?, photo1 = ?, photo2 = ?, photo3 = ?, photo4 = ? WHERE username = ?";
+
+        try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, profileData.getString("full_name"));
             pstmt.setInt(2, profileData.getInt("age"));
-            pstmt.setString(3, profileData.getString("bio"));
-            pstmt.setString(4, username);
+            pstmt.setString(3, profileData.getString("gender"));
+            pstmt.setString(4, profileData.getString("seeking"));
+            pstmt.setString(5, profileData.getString("interests"));
+            pstmt.setString(6, profileData.getString("habits"));
+            pstmt.setString(7, profileData.getString("relationship_status"));
+            pstmt.setString(8, profileData.getString("bio"));
+            pstmt.setString(9, profileData.optString("photo1", ""));
+            pstmt.setString(10, profileData.optString("photo2", ""));
+            pstmt.setString(11, profileData.optString("photo3", ""));
+            pstmt.setString(12, profileData.optString("photo4", ""));
+
+            pstmt.setString(13, username);
 
             int rowsAffected = pstmt.executeUpdate();
+            System.out.println("Đã cập nhật hồ sơ cho: " + username + ". Seeking mới: " + profileData.getString("seeking"));
             return rowsAffected > 0;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
@@ -482,4 +491,51 @@ public class DatabaseService {
         return candidates;
     }
 
+
+    // 1. Hàm tạo mã hồi phục và lưu vào DB
+    public static String generateRecoveryCode(String username) {
+        // Kiểm tra user có tồn tại không
+        try (java.sql.PreparedStatement checkStmt = conn.prepareStatement("SELECT id FROM users WHERE username = ?")) {
+            checkStmt.setString(1, username);
+            if (!checkStmt.executeQuery().next()) return null; // User không tồn tại
+        } catch (Exception e) { return null; }
+
+        // Tạo mã ngẫu nhiên 6 số
+        String code = String.valueOf((int) (Math.random() * 900000) + 100000);
+
+        // Lưu mã vào DB
+        String sql = "UPDATE users SET recovery_code = ? WHERE username = ?";
+        try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, code);
+            pstmt.setString(2, username);
+            pstmt.executeUpdate();
+            return code; // Trả về mã để Server in ra console
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // 2. Hàm kiểm tra mã và đổi mật khẩu
+    public static boolean resetPassword(String username, String code, String newPassword) {
+        // Kiểm tra xem mã có đúng không
+        String sqlCheck = "SELECT id FROM users WHERE username = ? AND recovery_code = ?";
+        try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sqlCheck)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, code);
+            if (!pstmt.executeQuery().next()) return false; // Mã sai
+        } catch (Exception e) { return false; }
+
+        // Mã đúng -> Cập nhật mật khẩu mới và xóa mã đi
+        String sqlUpdate = "UPDATE users SET password = ?, recovery_code = NULL WHERE username = ?";
+        try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sqlUpdate)) {
+            pstmt.setString(1, newPassword);
+            pstmt.setString(2, username);
+            pstmt.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
