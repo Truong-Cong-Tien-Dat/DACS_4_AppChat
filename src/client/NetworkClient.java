@@ -14,7 +14,7 @@ public class NetworkClient implements Runnable {
     private BufferedReader in;
 
     public NetworkClient(String host, int port) {
-        this.host = host; // Đây sẽ là IP mặc định (ví dụ: localhost) nếu không tìm thấy Server
+        this.host = host;
         this.port = port;
     }
 
@@ -23,7 +23,7 @@ public class NetworkClient implements Runnable {
         String discoveredIP = findServerIP();
 
         if (discoveredIP != null) {
-            this.host = discoveredIP; // Nếu tìm thấy, cập nhật IP mới
+            this.host = discoveredIP;
             System.out.println("Client: Đang kết nối tới Server tìm thấy tại " + this.host);
         } else {
             System.out.println("Client: Không tìm thấy Server qua LAN. Fallback về " + this.host);
@@ -78,7 +78,6 @@ public class NetworkClient implements Runnable {
 
 
             String message = new String(receivePacket.getData(), 0, receivePacket.getLength()).trim();
-            // Chuỗi trả lời này cũng phải khớp với Server
             if (message.contains("SERVER_IS_HERE") || message.contains("DND_CHAT_SERVER_HERE")) {
                 String ip = receivePacket.getAddress().getHostAddress();
                 System.out.println("Client: ==> TÌM THẤY SERVER TẠI: " + ip);
