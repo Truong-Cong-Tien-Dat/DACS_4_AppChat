@@ -8,26 +8,16 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseService {
-
-    // --- THAY ĐỔI CÁC THÔNG SỐ NÀY ---
-    private static final String DB_URL = "jdbc:mysql://localhost:3308/tinder_db"; // Đảm bảo tên CSDL là 'tinder_db'
-    private static final String DB_USER = "root"; // User MySQL của bạn
-    private static final String DB_PASS = "050655";     // Password MySQL của bạn
-    // ---------------------------------
-
+    private static final String DB_URL = "jdbc:mysql://localhost:3308/tinder_db";
+    private static final String DB_USER = "root";
+    private static final String DB_PASS = "050655";
     private static Connection conn;
 
-    /**
-     * Kết nối đến Cơ sở dữ liệu
-     * Được gọi một lần khi ServerApp khởi động.
-     */
-    public static void connect() {
+    public static boolean connect() {
         try {
-            // 1. Đăng ký JDBC Driver (không bắt buộc từ JDBC 4.0 nhưng nên có)
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             // 2. Mở kết nối
@@ -46,14 +36,10 @@ public class DatabaseService {
             System.err.println("Lỗi: Không tìm thấy MySQL JDBC Driver.");
             e.printStackTrace();
         }
+        return false;
     }
 
-    /**
-     * Xử lý đăng nhập
-     * Trả về JSONObject chứa hồ sơ nếu thành công, ngược lại trả về null.
-     */
     public static JSONObject loginUser(String username, String password) {
-        // (Lưu ý: Mật khẩu nên được hash, ở đây ta dùng text thường cho đơn giản)
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -62,20 +48,15 @@ public class DatabaseService {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // Đăng nhập thành công, đọc dữ liệu và tạo JSONObject hồ sơ
                     return resultSetToProfile(rs);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null; // Đăng nhập thất bại
+        return null;
     }
 
-    /**
-     * Xử lý đăng ký user mới
-     * Trả về true nếu thành công, false nếu tên đăng nhập đã tồn tại.
-     */
     public static boolean registerUser(JSONObject profile) {
         String sql = "INSERT INTO users (username, password, full_name, age, gender, interests, habits, relationship_status, bio, seeking, photo1, photo2, photo3, photo4) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -92,60 +73,40 @@ public class DatabaseService {
             pstmt.setString(9, profile.optString("bio", null));
             pstmt.setString(10, profile.getString("seeking"));
 
-            // Xử lý ảnh (giả sử client gửi tên file)
             pstmt.setString(11, profile.optString("photo1", "default_avatar.png"));
             pstmt.setString(12, profile.optString("photo2", null));
             pstmt.setString(13, profile.optString("photo3", null));
             pstmt.setString(14, profile.optString("photo4", null));
 
             pstmt.executeUpdate();
-            return true; // Đăng ký thành công
+            return true;
 
         } catch (SQLException e) {
-            // Lỗi 'Duplicate entry' cho 'username'
             if (e.getErrorCode() == 1062) {
                 System.err.println("Lỗi: Tên đăng nhập đã tồn tại.");
             } else {
                 e.printStackTrace();
             }
-            return false; // Đăng ký thất bại
+            return false;
         }
     }
-
-    /**
-     * Lấy hồ sơ (profiles) dựa trên danh sách usernames (từ AI)
-     * Lọc bỏ những người user hiện tại đã quẹt
-     */
-    // THAY THẾ HÀM CŨ BẰNG HÀM MỚI NÀY TRONG DatabaseService.java
-
-    /**
-     * Lấy TẤT CẢ các user mà 'username' có thể quan tâm
-     * (Dùng cho AI Service - PHIÊN BẢN NÂNG CẤP VỚI MATCHING 2 CHIỀU)
-     *
-     * @param currentUsername Tên user của tôi
-     * @param myGender        Giới tính của tôi
-     * @param mySeeking       Giới tính TÔI đang tìm
-     */
     public static JSONArray getPotentialCandidates(String currentUsername, String myGender, String mySeeking) {
         JSONArray candidates = new JSONArray();
         String sql;
 
-        // Xây dựng câu lệnh SQL phức tạp
         sql = "SELECT * FROM users WHERE " +
-                "username != ? AND ( " +             // (1) Không phải là tôi
-                "   ? = 'Khác' OR ? = 'Khác' OR " +   // (2) TÔI tìm 'Khác' hoặc giới tính của TÔI là 'Khác' (tôi thấy mọi người)
-                "   gender = 'Khác' OR seeking = 'Khác' OR " + // (3) HỌ là 'Khác' (họ thấy mọi người)
-                "   (gender = ? AND seeking = ?) " + // (4) Matching 2 chiều:
-                //     - Giới tính của HỌ = TÔI tìm
-                //     - HỌ tìm = Giới tính của TÔI
+                "username != ? AND ( " +
+                "   ? = 'Khác' OR ? = 'Khác' OR " +
+                "   gender = 'Khác' OR seeking = 'Khác' OR " +
+                "   (gender = ? AND seeking = ?) " +
                 ")";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, currentUsername); // (1)
-            pstmt.setString(2, myGender);        // (2)
-            pstmt.setString(3, mySeeking);       // (2)
-            pstmt.setString(4, mySeeking);       // (4) - Giới tính của HỌ = TÔI tìm
-            pstmt.setString(5, myGender);        // (4) - HỌ tìm = Giới tính của TÔI
+            pstmt.setString(1, currentUsername);
+            pstmt.setString(2, myGender);
+            pstmt.setString(3, mySeeking);
+            pstmt.setString(4, mySeeking);
+            pstmt.setString(5, myGender);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -157,11 +118,8 @@ public class DatabaseService {
         }
         return candidates;
     }
-    /**
-     * Ghi lại hành động quẹt (Like/Nope)
-     */
+
     public static void recordSwipe(String swiper, String swiped, boolean liked) {
-        // Dùng REPLACE INTO để nếu quẹt lại (dù không nên xảy ra) thì nó ghi đè
         String sql = "REPLACE INTO swipes (swiper_username, swiped_username, liked) VALUES (?, ?, ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -174,12 +132,7 @@ public class DatabaseService {
         }
     }
 
-    /**
-     * Kiểm tra xem có Match hay không
-     * Trả về true nếu CẢ HAI đều thích nhau (và tạo bản ghi match)
-     */
     public static boolean checkForMatch(String userA, String userB) {
-        // userA vừa like userB (đã được recordSwipe), giờ ta kiểm tra userB có like userA không
         String sql = "SELECT liked FROM swipes WHERE swiper_username = ? AND swiped_username = ? AND liked = 1";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -188,8 +141,6 @@ public class DatabaseService {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // Có! userB đã like userA. Đây là một MATCH!
-                    // Tạo bản ghi trong bảng 'matches' để truy vấn sau này
                     createMatchRecord(userA, userB);
                     return true;
                 }
@@ -197,14 +148,10 @@ public class DatabaseService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false; // Không match
+        return false;
     }
 
-    /**
-     * Helper: Tạo bản ghi Match (được gọi bởi checkForMatch)
-     */
     private static void createMatchRecord(String userA, String userB) {
-        // Sắp xếp tên để tránh trùng lặp (userA, userB) vs (userB, userA)
         String user1 = userA.compareTo(userB) < 0 ? userA : userB;
         String user2 = userA.compareTo(userB) < 0 ? userB : userA;
 
@@ -219,9 +166,6 @@ public class DatabaseService {
         }
     }
 
-    /**
-     * Lấy hồ sơ đầy đủ của MỘT user
-     */
     public static JSONObject getUserProfile(String username) {
         String sql = "SELECT * FROM users WHERE username = ?";
 
@@ -239,17 +183,13 @@ public class DatabaseService {
         return null;
     }
 
-    /**
-     * Lưu tin nhắn vào CSDL
-     */
     public static boolean saveMessage(String from, String to, String content, String type) {
-        // Thêm cột msg_type vào câu lệnh INSERT
         String sql = "INSERT INTO messages (from_username, to_username, content, msg_type) VALUES (?, ?, ?, ?)";
         try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, from);
             pstmt.setString(2, to);
             pstmt.setString(3, content);
-            pstmt.setString(4, type); // Lưu loại tin nhắn (TEXT/IMAGE)
+            pstmt.setString(4, type);
             pstmt.executeUpdate();
             return true;
         } catch (Exception e) {
@@ -257,41 +197,6 @@ public class DatabaseService {
             return false;
         }
     }
-
-    /**
-     * Lấy danh sách những người đã match với user
-     */
-//    public static JSONArray getMatchesForUser(String username) {
-//        JSONArray matches = new JSONArray();
-//        // Tìm tất cả các cặp có chứa 'username'
-//        String sql = "SELECT user1_username, user2_username FROM matches WHERE user1_username = ? OR user2_username = ?";
-//
-//        try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            pstmt.setString(1, username);
-//            pstmt.setString(2, username);
-//
-//            try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-//                while (rs.next()) {
-//                    String u1 = rs.getString("user1_username");
-//                    String u2 = rs.getString("user2_username");
-//
-//                    // Xác định ai là "người kia"
-//                    String partnerUsername = u1.equals(username) ? u2 : u1;
-//
-//                    // Lấy thông tin chi tiết của người kia
-//                    JSONObject partnerProfile = getUserProfile(partnerUsername);
-//                    if (partnerProfile != null) {
-//                        matches.put(partnerProfile);
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return matches;
-//    }
-// Trong server/DatabaseService.java
-
     public static JSONArray getMatchesForUser(String username) {
         JSONArray matches = new JSONArray();
         String sql = "SELECT user1_username, user2_username FROM matches WHERE user1_username = ? OR user2_username = ?";
@@ -329,7 +234,6 @@ public class DatabaseService {
     }
 
     public static boolean updateUserProfile(String username, JSONObject profileData) {
-        // Thêm gender và seeking vào câu lệnh UPDATE
         String sql = "UPDATE users SET full_name = ?, age = ?, gender = ?, seeking = ?, interests = ?, habits = ?, relationship_status = ?, bio = ?, photo1 = ?, photo2 = ?, photo3 = ?, photo4 = ? WHERE username = ?";
 
         try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -357,11 +261,6 @@ public class DatabaseService {
         }
     }
 
-    // --- HÀM HELPER ---
-
-    /**
-     * Chuyển đổi một dòng ResultSet từ bảng 'users' sang JSONObject
-     */
     private static JSONObject resultSetToProfile(ResultSet rs) throws SQLException {
         JSONObject profile = new JSONObject();
         profile.put("username", rs.getString("username"));
@@ -381,7 +280,6 @@ public class DatabaseService {
     }
 
     public static void clearNopedSwipes(String swiperUsername) {
-        // Chỉ xóa những dòng mà liked = 0 (False)
         String sql = "DELETE FROM swipes WHERE swiper_username = ? AND liked = 0";
         try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, swiperUsername);
@@ -393,7 +291,6 @@ public class DatabaseService {
     }
     public static org.json.JSONArray getChatHistory(String userA, String userB) {
         org.json.JSONArray history = new org.json.JSONArray();
-        // Lấy thêm cột msg_type
         String sql = "SELECT from_username, content, msg_type, sent_time FROM messages " +
                 "WHERE (from_username = ? AND to_username = ?) OR (from_username = ? AND to_username = ?) " +
                 "ORDER BY sent_time ASC";
@@ -432,7 +329,6 @@ public class DatabaseService {
         }
         sqlBuilder.append(")");
 
-        // (MỚI) Chỉ thêm bộ lọc NẾU filterSwiped là true
         if (filterSwiped) {
             sqlBuilder.append(" AND username NOT IN (SELECT swiped_username FROM swipes WHERE swiper_username = ?)");
         }
@@ -443,7 +339,6 @@ public class DatabaseService {
                 pstmt.setString(paramIndex++, username);
             }
 
-            // (MỚI) Chỉ set tham số này NẾU bộ lọc được bật
             if (filterSwiped) {
                 pstmt.setString(paramIndex, currentUsername);
             }
@@ -492,41 +387,36 @@ public class DatabaseService {
     }
 
 
-    // 1. Hàm tạo mã hồi phục và lưu vào DB
+
     public static String generateRecoveryCode(String username) {
-        // Kiểm tra user có tồn tại không
         try (java.sql.PreparedStatement checkStmt = conn.prepareStatement("SELECT id FROM users WHERE username = ?")) {
             checkStmt.setString(1, username);
             if (!checkStmt.executeQuery().next()) return null; // User không tồn tại
         } catch (Exception e) { return null; }
 
-        // Tạo mã ngẫu nhiên 6 số
         String code = String.valueOf((int) (Math.random() * 900000) + 100000);
 
-        // Lưu mã vào DB
         String sql = "UPDATE users SET recovery_code = ? WHERE username = ?";
         try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, code);
             pstmt.setString(2, username);
             pstmt.executeUpdate();
-            return code; // Trả về mã để Server in ra console
+            return code;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    // 2. Hàm kiểm tra mã và đổi mật khẩu
     public static boolean resetPassword(String username, String code, String newPassword) {
-        // Kiểm tra xem mã có đúng không
+
         String sqlCheck = "SELECT id FROM users WHERE username = ? AND recovery_code = ?";
         try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sqlCheck)) {
             pstmt.setString(1, username);
             pstmt.setString(2, code);
-            if (!pstmt.executeQuery().next()) return false; // Mã sai
+            if (!pstmt.executeQuery().next()) return false;
         } catch (Exception e) { return false; }
 
-        // Mã đúng -> Cập nhật mật khẩu mới và xóa mã đi
         String sqlUpdate = "UPDATE users SET password = ?, recovery_code = NULL WHERE username = ?";
         try (java.sql.PreparedStatement pstmt = conn.prepareStatement(sqlUpdate)) {
             pstmt.setString(1, newPassword);

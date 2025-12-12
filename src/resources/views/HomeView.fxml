@@ -42,7 +42,7 @@
             <StackPane fx:id="cardContainer" onMouseClicked="#handleCardClick"
                        VBox.vgrow="ALWAYS" maxWidth="400" maxHeight="600" style="-fx-padding: 20;">
 
-                <ImageView fx:id="profileImageView" fitHeight="600.0" fitWidth="400.0" pickOnBounds="true" preserveRatio="true" />
+                <ImageView fx:id="profileImageView" fitHeight="700.0" fitWidth="500.0" pickOnBounds="true" preserveRatio="true" />
 
                 <VBox mouseTransparent="true" alignment="BOTTOM_LEFT" spacing="5.0"
                       style="-fx-background-color: linear-gradient(to top, rgba(0,0,0,0.9), transparent); -fx-background-radius: 0 0 15 15;">
