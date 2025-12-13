@@ -70,6 +70,11 @@ public class ClientHandler implements Runnable {
                 case "GET_CHAT_HISTORY":
                     handleGetChatHistory(request);
                     break;
+                // --- THÊM CASE MỚI Ở ĐÂY ---
+                case "GET_PROFILE_BY_USERNAME":
+                    handleGetProfileByUsername(request);
+                    break;
+                // ---------------------------
                 case "UPDATE_PROFILE":
                     handleUpdateProfile(request);
                     break;
@@ -78,35 +83,60 @@ public class ClientHandler implements Runnable {
                     this.username = null;
                     break;
                 case "REQ_FORGOT_PASS":
-                    String uName = request.getString("username");
-                    String code = DatabaseService.generateRecoveryCode(uName);
-                    JSONObject res1 = new JSONObject();
-                    if (code != null) {
-                        System.out.println(">>> MÃ KHÔI PHỤC CHO " + uName + ": " + code + " <<<");
-                        res1.put("status", "FORGOT_PASS_SENT");
-                    } else {
-                        res1.put("status", "FORGOT_PASS_FAIL");
-                        res1.put("message", "Tên đăng nhập không tồn tại.");
-                    }
-                    sendMessage(res1.toString());
+                    handleForgotPass(request);
                     break;
-
                 case "REQ_RESET_PASS":
-                    boolean ok = DatabaseService.resetPassword(
-                            request.getString("username"),
-                            request.getString("code"),
-                            request.getString("new_password")
-                    );
-                    JSONObject res2 = new JSONObject();
-                    res2.put("status", ok ? "RESET_PASS_SUCCESS" : "RESET_PASS_FAIL");
-                    if (!ok) res2.put("message", "Mã xác nhận không đúng.");
-                    sendMessage(res2.toString());
+                    handleResetPass(request);
                     break;
             }
         } catch (Exception e) {
             e.printStackTrace();
             sendMessage(new JSONObject().put("status", "ERROR").put("message", "Request không hợp lệ").toString());
         }
+    }
+
+    // --- HÀM XỬ LÝ LẤY PROFILE NGƯỜI KHÁC ---
+    private void handleGetProfileByUsername(JSONObject request) {
+        String targetUser = request.getString("target_username");
+
+        // Tái sử dụng hàm getUserProfile có sẵn của DatabaseService
+        JSONObject profile = DatabaseService.getUserProfile(targetUser);
+
+        JSONObject response = new JSONObject();
+        if (profile != null) {
+            response.put("status", "PARTNER_PROFILE");
+            response.put("profile", profile);
+        } else {
+            response.put("status", "ERROR");
+            response.put("message", "Không tìm thấy người dùng.");
+        }
+        sendMessage(response.toString());
+    }
+
+    private void handleForgotPass(JSONObject request) {
+        String uName = request.getString("username");
+        String code = DatabaseService.generateRecoveryCode(uName);
+        JSONObject res1 = new JSONObject();
+        if (code != null) {
+            System.out.println(">>> MÃ KHÔI PHỤC CHO " + uName + ": " + code + " <<<");
+            res1.put("status", "FORGOT_PASS_SENT");
+        } else {
+            res1.put("status", "FORGOT_PASS_FAIL");
+            res1.put("message", "Tên đăng nhập không tồn tại.");
+        }
+        sendMessage(res1.toString());
+    }
+
+    private void handleResetPass(JSONObject request) {
+        boolean ok = DatabaseService.resetPassword(
+                request.getString("username"),
+                request.getString("code"),
+                request.getString("new_password")
+        );
+        JSONObject res2 = new JSONObject();
+        res2.put("status", ok ? "RESET_PASS_SUCCESS" : "RESET_PASS_FAIL");
+        if (!ok) res2.put("message", "Mã xác nhận không đúng.");
+        sendMessage(res2.toString());
     }
 
     private void handleLogin(JSONObject request) {
@@ -144,11 +174,8 @@ public class ClientHandler implements Runnable {
 
     private void handleGetProfiles(boolean filterSwiped) {
         if (this.username == null) return;
-
         List<String> suggestedUsernames = AIService.getRecommendations(this.username);
-
         JSONArray profiles = DatabaseService.getProfilesByUsernames(suggestedUsernames, this.username, filterSwiped);
-
         JSONObject response = new JSONObject();
         response.put("status", "PROFILE_LIST");
         response.put("profiles", profiles);
@@ -157,62 +184,42 @@ public class ClientHandler implements Runnable {
 
     private void handleSwipe(JSONObject request) {
         if (this.username == null) return;
-
         String swipedUsername = request.getString("swiped_username");
-        boolean liked = request.getBoolean("liked"); // "Tim" hay "X"
-
+        boolean liked = request.getBoolean("liked");
 
         DatabaseService.recordSwipe(this.username, swipedUsername, liked);
 
         if (liked) {
             boolean isMatch = DatabaseService.checkForMatch(this.username, swipedUsername);
-
             if (isMatch) {
                 System.out.println("MATCH FOUND: " + this.username + " and " + swipedUsername);
 
                 JSONObject matchNotification = new JSONObject();
                 matchNotification.put("status", "NEW_MATCH");
-                matchNotification.put("profile", DatabaseService.getUserProfile(swipedUsername)); // Gửi hồ sơ B
+                matchNotification.put("profile", DatabaseService.getUserProfile(swipedUsername));
                 sendMessage(matchNotification.toString());
 
                 JSONObject otherMatchNotification = new JSONObject();
                 otherMatchNotification.put("status", "NEW_MATCH");
-                otherMatchNotification.put("profile", DatabaseService.getUserProfile(this.username)); // Gửi hồ sơ A
-                ServerApp.sendMessageToUser(swipedUsername, otherMatchNotification.toString()); // Gửi cho B
+                otherMatchNotification.put("profile", DatabaseService.getUserProfile(this.username));
+                ServerApp.sendMessageToUser(swipedUsername, otherMatchNotification.toString());
             }
         }
     }
 
-//    private void handleGetMatches() {
-//        if (this.username == null) return;
-//        JSONArray matches = DatabaseService.getMatchesForUser(this.username);
-//        JSONObject response = new JSONObject();
-//        response.put("status", "MATCH_LIST");
-//        response.put("matches", matches);
-//        sendMessage(response.toString());
-//    }
-// Trong server/ClientHandler.java
-
     private void handleGetMatches() {
-        System.out.println("DEBUG: Đang xử lý GET_MATCHES cho user: " + this.username); // <--- IN RA
-
-        if (this.username == null) {
-            System.out.println("LỖI: Username bị null, không thể lấy matches!");
-            return;
-        }
-
+        System.out.println("DEBUG: Đang xử lý GET_MATCHES cho user: " + this.username);
+        if (this.username == null) return;
         JSONArray matches = DatabaseService.getMatchesForUser(this.username);
-
-        System.out.println("DEBUG: Tìm thấy " + matches.length() + " matches."); // <--- IN RA SỐ LƯỢNG
-
+        System.out.println("DEBUG: Tìm thấy " + matches.length() + " matches.");
         JSONObject response = new JSONObject();
         response.put("status", "MATCH_LIST");
         response.put("matches", matches);
         sendMessage(response.toString());
     }
+
     private void handleSendMessage(JSONObject request) {
         if (this.username == null) return;
-
         String toUsername = request.getString("to_username");
         String messageContent = request.getString("content");
         String type = request.optString("type", "TEXT");
@@ -229,10 +236,8 @@ public class ClientHandler implements Runnable {
 
     private void handleUpdateProfile(JSONObject request) {
         if (this.username == null) return;
-
         JSONObject profileData = request.getJSONObject("profile");
         boolean success = DatabaseService.updateUserProfile(this.username, profileData);
-
         JSONObject response = new JSONObject();
         response.put("status", success ? "UPDATE_SUCCESS" : "UPDATE_FAIL");
         sendMessage(response.toString());
@@ -244,16 +249,12 @@ public class ClientHandler implements Runnable {
 
     private void handleGetChatHistory(JSONObject request) {
         if (this.username == null) return;
-
         String withUsername = request.getString("with_username");
-
         JSONArray history = DatabaseService.getChatHistory(this.username, withUsername);
-
         JSONObject response = new JSONObject();
         response.put("status", "CHAT_HISTORY");
         response.put("with_username", withUsername);
         response.put("history", history);
-
         sendMessage(response.toString());
     }
 }

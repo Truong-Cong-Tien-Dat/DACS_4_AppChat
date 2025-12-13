@@ -31,12 +31,11 @@ public class ChatCellRenderer extends ListCell<ChatMessage> {
         if (empty || msg == null) {
             setGraphic(null);
             setText(null);
-            setStyle("-fx-background-color: transparent;"); // Fix lỗi vệt màu
+            setStyle("-fx-background-color: transparent;");
         } else {
             HBox container = new HBox();
             VBox bubble = new VBox(5);
 
-            // --- XỬ LÝ ẢNH ---
             if (msg.getType() == ChatMessage.Type.IMAGE) {
                 try {
                     File file = new File("images/" + msg.getContent());
@@ -48,7 +47,6 @@ public class ChatCellRenderer extends ListCell<ChatMessage> {
                     imageView.setPreserveRatio(true);
                     imageView.getStyleClass().add("chat-image-view");
 
-                    // 1. Sự kiện CLICK CHUỘT (Zoom & Menu)
                     imageView.setOnMouseClicked(e -> {
                         if (e.getButton() == MouseButton.PRIMARY) {
 
@@ -56,12 +54,11 @@ public class ChatCellRenderer extends ListCell<ChatMessage> {
                         }
                     });
 
-                    // 2. Context Menu (Chuột phải)
                     ContextMenu contextMenu = new ContextMenu();
                     MenuItem saveItem = new MenuItem("Lưu về máy");
                     saveItem.setOnAction(e -> saveImageToDisk(file));
 
-                    MenuItem copyItem = new MenuItem("Copy hình ảnh (Demo)"); // JavaFX copy clipboard phức tạp hơn chút
+                    MenuItem copyItem = new MenuItem("Copy hình ảnh (Demo)");
                     MenuItem deleteItem = new MenuItem("Xóa (Chỉ phía tôi)");
                     deleteItem.setOnAction(e -> getListView().getItems().remove(msg)); // Xóa tạm khỏi list
 

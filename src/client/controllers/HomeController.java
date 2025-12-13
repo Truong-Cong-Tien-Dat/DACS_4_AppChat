@@ -23,13 +23,10 @@ public class HomeController {
     @FXML private Circle myAvatarCircle;
     @FXML private Label myFullNameLabel;
     @FXML private ListView<String> matchesListView;
-
-    // Các thành phần của thẻ hồ sơ
     @FXML private ImageView profileImageView;
     @FXML private Label nameAgeLabel;
     @FXML private Label bioLabel;
 
-    // (QUAN TRỌNG) Khung chứa ảnh để bắt sự kiện click
     @FXML private StackPane cardContainer;
 
     private List<JSONObject> profileQueue = new ArrayList<>();
@@ -38,7 +35,6 @@ public class HomeController {
     private int currentPhotoIndex = 0;
 
     public void initData() {
-        // 1. Hiển thị tên tôi
         JSONObject myProfile = ClientApp.getInstance().getUserProfile();
         if (myProfile != null) {
             myFullNameLabel.setText(myProfile.getString("full_name"));
@@ -46,7 +42,7 @@ public class HomeController {
             myFullNameLabel.setText("Người dùng");
         }
 
-        // 2. Cài đặt bo tròn cho ảnh
+
         if (profileImageView != null) {
             javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
             clip.widthProperty().bind(profileImageView.fitWidthProperty());
@@ -70,11 +66,8 @@ public class HomeController {
         ClientApp.getInstance().getNetworkClient().sendRequest(req);
     }
 
-    // --- (MỚI) HÀM XỬ LÝ CLICK VÀO ẢNH ---
-    // Hàm này được gọi từ FXML (onMouseClicked="#handleCardClick")
     @FXML
     private void handleCardClick(MouseEvent event) {
-        // Nếu không có hồ sơ hoặc container chưa load thì bỏ qua
         if (profileQueue.isEmpty() || cardContainer == null) return;
 
         double width = cardContainer.getWidth();
@@ -82,7 +75,6 @@ public class HomeController {
 
         System.out.println("Click tại: " + clickX + " / " + width);
 
-        // Chia đôi màn hình: Trái là Lùi, Phải là Tiến
         if (clickX < width / 2) {
             prevPhoto();
         } else {
