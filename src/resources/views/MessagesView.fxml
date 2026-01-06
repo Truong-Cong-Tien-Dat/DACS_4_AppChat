@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -63,18 +64,57 @@
 
                     <ListView fx:id="chatListView" styleClass="chat-list-view" VBox.vgrow="ALWAYS" />
 
-                    <HBox alignment="CENTER_LEFT" style="-fx-border-color: #eee; -fx-border-width: 1 0 0 0;">
-                        <padding><Insets top="15.0" right="20.0" bottom="15.0" left="20.0" /></padding>
-                        <Button onAction="#handleSendFile" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 20px;" text="📷" />
-                        <TextField fx:id="messageInputField" onAction="#handleSendMessage" promptText="Nhập tin nhắn..." style="-fx-background-color: transparent; -fx-font-size: 14px;" HBox.hgrow="ALWAYS">
-                            <HBox.margin><Insets left="10.0" right="10.0" /></HBox.margin>
-                        </TextField>
-                        <Button onAction="#handleSendMessage" style="-fx-background-color: transparent; -fx-text-fill: #fd267a; -fx-font-weight: bold; -fx-cursor: hand;" text="Gửi" />
-                    </HBox>
+                    <StackPane style="-fx-border-color: #eee; -fx-border-width: 1 0 0 0; -fx-padding: 10 20;">
+
+                        <HBox fx:id="boxInputMessage" alignment="CENTER_LEFT" spacing="5.0" visible="true">
+
+                            <Button onAction="#handleSendFile" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 20px; -fx-text-fill: #fd267a;" text="📷">
+                                <tooltip><Tooltip text="Gửi ảnh"/></tooltip>
+                            </Button>
+
+                            <Button onAction="#handleSendDocument" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 20px; -fx-text-fill: #fd267a;" text="📎">
+                                <tooltip><Tooltip text="Gửi tài liệu"/></tooltip>
+                            </Button>
+
+                            <Button fx:id="btnEmoji" onAction="#handleEmoji" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 20px; -fx-text-fill: #fd267a;" text="😀">
+                                <tooltip><Tooltip text="Emoji"/></tooltip>
+                            </Button>
+
+                            <Button onAction="#startRecordingUI" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 20px; -fx-text-fill: #fd267a;" text="🎙">
+                                <tooltip><Tooltip text="Ghi âm"/></tooltip>
+                            </Button>
+
+                            <TextField fx:id="messageInputField" onAction="#handleSendMessage" promptText="Nhập tin nhắn..." style="-fx-background-color: #f0f2f5; -fx-background-radius: 20; -fx-padding: 8 15; -fx-font-size: 14px;" HBox.hgrow="ALWAYS">
+                                <HBox.margin><Insets left="5.0" right="5.0" /></HBox.margin>
+                            </TextField>
+
+                            <Button onAction="#handleSendMessage" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 22px; -fx-text-fill: #fd267a;" text="➤">
+                                <tooltip><Tooltip text="Gửi tin nhắn"/></tooltip>
+                            </Button>
+                        </HBox>
+
+                        <HBox fx:id="boxRecording" alignment="CENTER_LEFT" spacing="15.0" visible="false" style="-fx-background-color: white;">
+                            <Button onAction="#cancelRecording" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: #666; -fx-font-size: 24px;" text="🗑">
+                                <tooltip><Tooltip text="Hủy bỏ"/></tooltip>
+                            </Button>
+
+                            <HBox alignment="CENTER_LEFT" spacing="10" HBox.hgrow="ALWAYS" style="-fx-background-color: #0084ff; -fx-background-radius: 25; -fx-padding: 5 15;">
+                                <Label text="🔴" style="-fx-font-size: 14px; -fx-text-fill: white;" />
+                                <Label text="Đang ghi âm..." textFill="WHITE" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                                    <font><Font size="14.0"/></font>
+                                </Label>
+                                <Label fx:id="lblRecordingTimer" text="0:00" textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 14px;" />
+                            </HBox>
+
+                            <Button onAction="#finishAndSendRecording" style="-fx-background-color: #0084ff; -fx-background-radius: 50%; -fx-min-width: 45px; -fx-min-height: 45px; -fx-cursor: hand; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;" text="➤">
+                                <tooltip><Tooltip text="Gửi ghi âm"/></tooltip>
+                            </Button>
+                        </HBox>
+
+                    </StackPane>
                 </VBox>
             </StackPane>
         </center>
-
     </BorderPane>
 
     <VBox fx:id="imageOverlay" visible="false" alignment="CENTER" style="-fx-background-color: rgba(0,0,0,0.8);" onMouseClicked="#closeImageOverlay">

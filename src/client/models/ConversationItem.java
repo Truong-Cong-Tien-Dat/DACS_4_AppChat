@@ -5,12 +5,14 @@ import javafx.beans.property.SimpleBooleanProperty;
 
 public class ConversationItem {
     private String username;
-    private String avatarUrl; // Tên file ảnh (vd: photo1.jpg)
-
+    private String fullName;
+    private String avatarUrl;
     private final BooleanProperty hasUnreadMessages = new SimpleBooleanProperty(false);
 
-    public ConversationItem(String username, String avatarUrl) {
+    // Constructor nhận đủ 3 tham số: username, fullName, avatarUrl
+    public ConversationItem(String username, String fullName, String avatarUrl) {
         this.username = username;
+        this.fullName = fullName;
         this.avatarUrl = avatarUrl;
     }
 
@@ -18,11 +20,16 @@ public class ConversationItem {
         return username;
     }
 
+    // Hàm quan trọng: Nếu có fullName thì trả về fullName, nếu không thì trả về username
+    public String getFullName() {
+        return (fullName != null && !fullName.isEmpty()) ? fullName : username;
+    }
+
     public String getAvatarUrl() {
         return avatarUrl;
     }
 
-    // --- Các hàm hỗ trợ Property (JavaFX) ---
+    // --- Các hàm hỗ trợ Property cho JavaFX (để xử lý trạng thái chưa đọc) ---
     public BooleanProperty hasUnreadMessagesProperty() {
         return hasUnreadMessages;
     }
@@ -37,6 +44,6 @@ public class ConversationItem {
 
     @Override
     public String toString() {
-        return username;
+        return getFullName();
     }
 }

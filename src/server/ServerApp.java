@@ -58,7 +58,7 @@ public class ServerApp {
         public void run() {
             try (DatagramSocket socket = new DatagramSocket(8888, InetAddress.getByName("0.0.0.0"))) {
                 socket.setBroadcast(true);
-                System.out.println("[UDP] Server đang lắng nghe tín hiệu tìm kiếm trên cổng 8888...");
+                System.out.println("Server đang lắng nghe tín hiệu tìm kiếm trên cổng 8888...");
 
                 byte[] recvBuf = new byte[1024];
                 while (true) {

@@ -7,6 +7,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -14,7 +15,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<StackPane prefHeight="1000.0" prefWidth="700.0" stylesheets="@../styles/tinder-theme.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controllers.ProfileController">
+<StackPane prefHeight="700.0" prefWidth="1000.0" stylesheets="@../styles/tinder-theme.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.controllers.ProfileController">
 
     <ScrollPane fx:id="viewModePane" fitToWidth="true" style="-fx-background-color: transparent; -fx-vbar-policy: AS_NEEDED;">
         <content>
@@ -23,8 +24,9 @@
                 <VBox alignment="TOP_CENTER" maxWidth="500.0" spacing="30.0" VBox.vgrow="ALWAYS">
 
                     <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 20 0 0 0;">
-                        <Button onAction="#backToHome" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" text="&lt; Quay lại" />
+                        <Button onAction="#handleBack" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" text="&lt; Quay lại" />
                         <Region HBox.hgrow="ALWAYS" />
+
                         <Button fx:id="btnEditProfile" onAction="#showEditMode" styleClass="btn-gradient" text="Chỉnh sửa hồ sơ" />
                         <Button fx:id="btnLogout" onAction="#handleLogout" style="-fx-background-color: #333; -fx-text-fill: #ff4458; -fx-cursor: hand;" text="Đăng xuất">
                             <HBox.margin><Insets left="10.0" /></HBox.margin>
@@ -32,10 +34,8 @@
                     </HBox>
 
                     <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 40 0 0 0;">
-
                         <StackPane>
                             <Circle fx:id="avatarCircle" radius="85.0" stroke="#000000" strokeWidth="4.0" style="-fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.1), 20, 0, 0, 0);" fill="#333333" />
-
                             <Button fx:id="btnChangeAvatar" onAction="#quickChangeAvatar" style="-fx-background-color: #2f3136; -fx-background-radius: 50%; -fx-cursor: hand; -fx-border-color: #555; -fx-border-radius: 50%;" text="📷" textFill="WHITE" StackPane.alignment="BOTTOM_RIGHT">
                                 <font><Font size="16.0" /></font>
                                 <padding><Insets bottom="8" left="8" right="8" top="8" /></padding>
@@ -48,13 +48,9 @@
                                 <font><Font name="System Bold" size="34.0" /></font>
                             </Label>
                             <HBox alignment="CENTER" spacing="10.0">
-                                <Label fx:id="viewAgeLabel" text="20" textFill="#aaaaaa">
-                                    <font><Font size="18.0" /></font>
-                                </Label>
+                                <Label fx:id="viewAgeLabel" text="20" textFill="#aaaaaa"><font><Font size="18.0" /></font></Label>
                                 <Label text="•" textFill="#555" />
-                                <Label fx:id="viewGenderLabel" text="Nam" textFill="#aaaaaa">
-                                    <font><Font size="18.0" /></font>
-                                </Label>
+                                <Label fx:id="viewGenderLabel" text="Nam" textFill="#aaaaaa"><font><Font size="18.0" /></font></Label>
                             </HBox>
                         </VBox>
                     </VBox>
@@ -65,19 +61,16 @@
                                 <Label text="Tiểu sử" textFill="#fd267a"><font><Font name="System Bold" size="18.0" /></font></Label>
                                 <Label fx:id="viewBioLabel" text="---" textFill="#dddddd" wrapText="true" style="-fx-font-size: 16px;"/>
                             </VBox>
-
                             <VBox spacing="8.0">
                                 <Label text="Sở thích" textFill="#fd267a"><font><Font name="System Bold" size="18.0" /></font></Label>
                                 <Label fx:id="viewInterestsLabel" text="---" textFill="#dddddd" wrapText="true" style="-fx-font-size: 16px;"/>
                             </VBox>
                         </VBox>
-
                         <VBox spacing="25.0" HBox.hgrow="ALWAYS">
                             <VBox spacing="8.0">
                                 <Label text="Thói quen" textFill="#fd267a"><font><Font name="System Bold" size="18.0" /></font></Label>
                                 <Label fx:id="viewHabitsLabel" text="---" textFill="#dddddd" wrapText="true" style="-fx-font-size: 16px;"/>
                             </VBox>
-
                             <VBox spacing="8.0">
                                 <Label text="Tình trạng mối quan hệ" textFill="#fd267a"><font><Font name="System Bold" size="18.0" /></font></Label>
                                 <Label fx:id="viewRelationLabel" text="---" textFill="#dddddd" style="-fx-font-size: 16px;"/>
@@ -90,107 +83,74 @@
                             <font><Font name="System Bold" size="22.0" /></font>
                         </Label>
 
-                        <HBox alignment="CENTER" spacing="20.0">
-                            <Region fx:id="viewPhoto1" prefHeight="190.0" prefWidth="190.0" styleClass="album-photo-region" />
-                            <Region fx:id="viewPhoto2" prefHeight="190.0" prefWidth="190.0" styleClass="album-photo-region" />
-                            <Region fx:id="viewPhoto3" prefHeight="190.0" prefWidth="190.0" styleClass="album-photo-region" />
-                            <Region fx:id="viewPhoto4" prefHeight="190.0" prefWidth="190.0" styleClass="album-photo-region" />
+                        <HBox alignment="CENTER" spacing="15.0">
+                            <ImageView fx:id="viewPhoto1" fitHeight="110.0" fitWidth="110.0" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;" />
+                            <ImageView fx:id="viewPhoto2" fitHeight="110.0" fitWidth="110.0" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;" />
+                            <ImageView fx:id="viewPhoto3" fitHeight="110.0" fitWidth="110.0" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;" />
+                            <ImageView fx:id="viewPhoto4" fitHeight="110.0" fitWidth="110.0" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;" />
                         </HBox>
                     </VBox>
 
-                </VBox> </VBox>
+                </VBox>
+            </VBox>
         </content>
     </ScrollPane>
 
     <HBox fx:id="editModePane" alignment="CENTER" visible="false" style="-fx-background-color: #000000;">
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-vbar-policy: AS_NEEDED;" HBox.hgrow="ALWAYS">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS">
             <content>
                 <VBox alignment="TOP_CENTER" style="-fx-background-color: #000000; -fx-padding: 40 0;">
-                    <VBox alignment="TOP_CENTER" maxWidth="600.0" spacing="25.0">
-
-                        <Label text="Chỉnh Sửa Hồ Sơ" textFill="WHITE">
-                            <font><Font name="System Bold" size="32.0" /></font>
-                        </Label>
+                    <VBox alignment="TOP_CENTER" maxWidth="500.0" spacing="25.0">
+                        <Label text="Chỉnh Sửa Hồ Sơ" textFill="WHITE"><font><Font name="System Bold" size="32.0" /></font></Label>
 
                         <VBox spacing="20.0">
-                            <VBox spacing="8.0">
-                                <Label text="Họ và tên" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
-                                <TextField fx:id="nameField" promptText="Nhập tên hiển thị" styleClass="dark-field" />
-                            </VBox>
-
+                            <VBox spacing="8.0"><Label text="Họ và tên" textFill="#aaaaaa" /><TextField fx:id="nameField" styleClass="dark-field" /></VBox>
                             <HBox spacing="25.0">
+                                <VBox spacing="8.0" HBox.hgrow="ALWAYS"><Label text="Tuổi" textFill="#aaaaaa" /><TextField fx:id="ageField" styleClass="dark-field" /></VBox>
                                 <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                                    <Label text="Tuổi" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
-                                    <TextField fx:id="ageField" promptText="18" styleClass="dark-field" />
-                                </VBox>
-
-                                <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                                    <Label text="Giới tính" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
+                                    <Label text="Giới tính" textFill="#aaaaaa" />
                                     <HBox spacing="20.0" style="-fx-padding: 10; -fx-background-color: #21262e; -fx-background-radius: 12;">
-                                        <RadioButton fx:id="genderMale" text="Nam" textFill="WHITE">
-                                            <toggleGroup><ToggleGroup fx:id="genderGroup" /></toggleGroup>
-                                            <font><Font size="14.0" /></font>
-                                        </RadioButton>
-                                        <RadioButton fx:id="genderFemale" text="Nữ" textFill="WHITE" toggleGroup="$genderGroup">
-                                            <font><Font size="14.0" /></font>
-                                        </RadioButton>
+                                        <RadioButton fx:id="genderMale" text="Nam" textFill="WHITE"><toggleGroup><ToggleGroup fx:id="genderGroup" /></toggleGroup></RadioButton>
+                                        <RadioButton fx:id="genderFemale" text="Nữ" textFill="WHITE" toggleGroup="$genderGroup" />
                                     </HBox>
                                 </VBox>
                             </HBox>
-
                             <VBox spacing="8.0">
-                                <Label text="Đang tìm kiếm" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
+                                <Label text="Đang tìm kiếm" textFill="#aaaaaa" />
                                 <HBox spacing="20.0" style="-fx-padding: 10; -fx-background-color: #21262e; -fx-background-radius: 12;">
-                                    <RadioButton fx:id="seekingMale" text="Nam" textFill="WHITE">
-                                        <toggleGroup><ToggleGroup fx:id="seekingGroup" /></toggleGroup>
-                                        <font><Font size="14.0" /></font>
-                                    </RadioButton>
-                                    <RadioButton fx:id="seekingFemale" text="Nữ" textFill="WHITE" toggleGroup="$seekingGroup">
-                                        <font><Font size="14.0" /></font>
-                                    </RadioButton>
+                                    <RadioButton fx:id="seekingMale" text="Nam" textFill="WHITE"><toggleGroup><ToggleGroup fx:id="seekingGroup" /></toggleGroup></RadioButton>
+                                    <RadioButton fx:id="seekingFemale" text="Nữ" textFill="WHITE" toggleGroup="$seekingGroup" />
                                 </HBox>
                             </VBox>
-
-                            <VBox spacing="8.0">
-                                <Label text="Tiểu sử (Bio)" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
-                                <TextField fx:id="bioField" promptText="Viết gì đó về bạn..." styleClass="dark-field" />
-                            </VBox>
-
-                            <VBox spacing="8.0">
-                                <Label text="Sở thích" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
-                                <TextField fx:id="interestsField" promptText="Ví dụ: Du lịch, Ăn uống..." styleClass="dark-field" />
-                            </VBox>
-
-                            <VBox spacing="8.0">
-                                <Label text="Thói quen" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
-                                <TextField fx:id="habitsField" promptText="Ví dụ: Ngủ sớm, Tập gym..." styleClass="dark-field" />
-                            </VBox>
-
-                            <VBox spacing="8.0">
-                                <Label text="Tình trạng quan hệ" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
-                                <TextField fx:id="relationshipField" promptText="Độc thân, Hẹn hò..." styleClass="dark-field" />
-                            </VBox>
+                            <VBox spacing="8.0"><Label text="Tiểu sử" textFill="#aaaaaa" /><TextField fx:id="bioField" styleClass="dark-field" /></VBox>
+                            <VBox spacing="8.0"><Label text="Sở thích" textFill="#aaaaaa" /><TextField fx:id="interestsField" styleClass="dark-field" /></VBox>
+                            <VBox spacing="8.0"><Label text="Thói quen" textFill="#aaaaaa" /><TextField fx:id="habitsField" styleClass="dark-field" /></VBox>
+                            <VBox spacing="8.0"><Label text="Quan hệ" textFill="#aaaaaa" /><TextField fx:id="relationshipField" styleClass="dark-field" /></VBox>
                         </VBox>
 
                         <VBox spacing="15.0">
-                            <Label text="Ảnh hồ sơ (Click để thay đổi)" textFill="#aaaaaa" ><font><Font name="System Bold" size="14.0" /></font></Label>
+                            <Label text="Ảnh hồ sơ (Click để thay đổi)" textFill="#aaaaaa" />
                             <HBox alignment="CENTER" spacing="20.0">
-                                <Button fx:id="photoBtn1" onAction="#choosePhoto" prefHeight="110.0" prefWidth="110.0" styleClass="photo-placeholder" text="+" />
-                                <Button fx:id="photoBtn2" onAction="#choosePhoto" prefHeight="110.0" prefWidth="110.0" styleClass="photo-placeholder" text="+" />
-                                <Button fx:id="photoBtn3" onAction="#choosePhoto" prefHeight="110.0" prefWidth="110.0" styleClass="photo-placeholder" text="+" />
-                                <Button fx:id="photoBtn4" onAction="#choosePhoto" prefHeight="110.0" prefWidth="110.0" styleClass="photo-placeholder" text="+" />
+                                <Button fx:id="photoBtn1" onAction="#choosePhoto" prefHeight="80.0" prefWidth="80.0" styleClass="photo-placeholder" text="+" />
+                                <Button fx:id="photoBtn2" onAction="#choosePhoto" prefHeight="80.0" prefWidth="80.0" styleClass="photo-placeholder" text="+" />
+                                <Button fx:id="photoBtn3" onAction="#choosePhoto" prefHeight="80.0" prefWidth="80.0" styleClass="photo-placeholder" text="+" />
+                                <Button fx:id="photoBtn4" onAction="#choosePhoto" prefHeight="80.0" prefWidth="80.0" styleClass="photo-placeholder" text="+" />
                             </HBox>
                         </VBox>
 
                         <HBox alignment="CENTER" spacing="25.0" style="-fx-padding: 30 0 0 0;">
-                            <Button onAction="#hideEditMode" prefHeight="45.0" prefWidth="140.0" style="-fx-background-color: #333; -fx-text-fill: white; -fx-background-radius: 25; -fx-cursor: hand; -fx-font-weight: bold;" text="Hủy" />
+                            <Button onAction="#hideEditMode" prefHeight="45.0" prefWidth="140.0" style="-fx-background-color: #333; -fx-text-fill: white; -fx-background-radius: 25;" text="Hủy" />
                             <Button onAction="#handleUpdate" prefHeight="45.0" prefWidth="140.0" styleClass="btn-gradient" style="-fx-background-radius: 25;" text="Lưu thay đổi" />
                         </HBox>
-
                     </VBox>
                 </VBox>
             </content>
         </ScrollPane>
     </HBox>
+
+    <VBox fx:id="imageOverlay" visible="false" alignment="CENTER" style="-fx-background-color: rgba(0,0,0,0.9);" onMouseClicked="#closeImageOverlay">
+        <ImageView fx:id="enlargedImageView" preserveRatio="true" fitHeight="600" fitWidth="800" />
+        <Label text="Nhấn để đóng" textFill="WHITE" style="-fx-padding: 20;" />
+    </VBox>
 
 </StackPane>

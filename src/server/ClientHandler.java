@@ -1,4 +1,5 @@
 package server;
+
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -70,13 +71,14 @@ public class ClientHandler implements Runnable {
                 case "GET_CHAT_HISTORY":
                     handleGetChatHistory(request);
                     break;
-                // --- THÊM CASE MỚI Ở ĐÂY ---
                 case "GET_PROFILE_BY_USERNAME":
                     handleGetProfileByUsername(request);
                     break;
-                // ---------------------------
                 case "UPDATE_PROFILE":
                     handleUpdateProfile(request);
+                    break;
+                case "DELETE_MESSAGE":
+                    handleDeleteMessage(request);
                     break;
                 case "LOGOUT":
                     ServerApp.removeClient(this.username);
@@ -95,13 +97,55 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    // --- HÀM XỬ LÝ LẤY PROFILE NGƯỜI KHÁC ---
+    // --- XỬ LÝ XÓA TIN NHẮN ---
+    private void handleDeleteMessage(JSONObject request) {
+        int msgId = request.getInt("message_id");
+        String partnerUsername = request.optString("partner_username");
+
+        boolean success = DatabaseService.deleteMessage(msgId);
+
+        if (success) {
+            System.out.println(">>> Đã xóa tin nhắn ID: " + msgId);
+
+            JSONObject response = new JSONObject();
+            response.put("status", "MESSAGE_DELETED");
+            response.put("deleted_id", msgId);
+
+            sendMessage(response.toString());
+
+            if (partnerUsername != null && !partnerUsername.isEmpty()) {
+                ServerApp.sendMessageToUser(partnerUsername, response.toString());
+            }
+        } else {
+            sendMessage(new JSONObject().put("status", "ERROR").put("message", "Lỗi khi xóa tin nhắn").toString());
+        }
+    }
+
+    private void handleSendMessage(JSONObject request) {
+        if (this.username == null) return;
+        String toUsername = request.getString("to_username");
+        String messageContent = request.getString("content");
+        String type = request.optString("type", "TEXT");
+        String fileName = request.optString("file_name", null);
+
+        int newMsgId = DatabaseService.saveMessage(this.username, toUsername, messageContent, type, fileName);
+
+        JSONObject message = new JSONObject();
+        message.put("status", "NEW_MESSAGE");
+        message.put("from_username", this.username);
+        message.put("content", messageContent);
+        message.put("type", type);
+        message.put("id", newMsgId);
+        message.put("msg_id", newMsgId);
+        if (fileName != null) message.put("file_name", fileName);
+
+        ServerApp.sendMessageToUser(toUsername, message.toString());
+        sendMessage(message.toString());
+    }
+
     private void handleGetProfileByUsername(JSONObject request) {
         String targetUser = request.getString("target_username");
-
-        // Tái sử dụng hàm getUserProfile có sẵn của DatabaseService
         JSONObject profile = DatabaseService.getUserProfile(targetUser);
-
         JSONObject response = new JSONObject();
         if (profile != null) {
             response.put("status", "PARTNER_PROFILE");
@@ -128,11 +172,7 @@ public class ClientHandler implements Runnable {
     }
 
     private void handleResetPass(JSONObject request) {
-        boolean ok = DatabaseService.resetPassword(
-                request.getString("username"),
-                request.getString("code"),
-                request.getString("new_password")
-        );
+        boolean ok = DatabaseService.resetPassword(request.getString("username"), request.getString("code"), request.getString("new_password"));
         JSONObject res2 = new JSONObject();
         res2.put("status", ok ? "RESET_PASS_SUCCESS" : "RESET_PASS_FAIL");
         if (!ok) res2.put("message", "Mã xác nhận không đúng.");
@@ -142,10 +182,8 @@ public class ClientHandler implements Runnable {
     private void handleLogin(JSONObject request) {
         String user = request.getString("username");
         String pass = request.getString("password");
-
         JSONObject profile = DatabaseService.loginUser(user, pass);
         JSONObject response = new JSONObject();
-
         if (profile != null) {
             this.username = user;
             ServerApp.addClient(user, this);
@@ -161,14 +199,9 @@ public class ClientHandler implements Runnable {
     private void handleRegister(JSONObject request) {
         JSONObject profileData = request.getJSONObject("profile");
         boolean success = DatabaseService.registerUser(profileData);
-
         JSONObject response = new JSONObject();
-        if (success) {
-            response.put("status", "REGISTER_SUCCESS");
-        } else {
-            response.put("status", "REGISTER_FAIL");
-            response.put("message", "Tên đăng nhập đã tồn tại");
-        }
+        response.put("status", success ? "REGISTER_SUCCESS" : "REGISTER_FAIL");
+        if (!success) response.put("message", "Tên đăng nhập đã tồn tại");
         sendMessage(response.toString());
     }
 
@@ -186,19 +219,15 @@ public class ClientHandler implements Runnable {
         if (this.username == null) return;
         String swipedUsername = request.getString("swiped_username");
         boolean liked = request.getBoolean("liked");
-
         DatabaseService.recordSwipe(this.username, swipedUsername, liked);
-
         if (liked) {
             boolean isMatch = DatabaseService.checkForMatch(this.username, swipedUsername);
             if (isMatch) {
                 System.out.println("MATCH FOUND: " + this.username + " and " + swipedUsername);
-
                 JSONObject matchNotification = new JSONObject();
                 matchNotification.put("status", "NEW_MATCH");
                 matchNotification.put("profile", DatabaseService.getUserProfile(swipedUsername));
                 sendMessage(matchNotification.toString());
-
                 JSONObject otherMatchNotification = new JSONObject();
                 otherMatchNotification.put("status", "NEW_MATCH");
                 otherMatchNotification.put("profile", DatabaseService.getUserProfile(this.username));
@@ -208,40 +237,62 @@ public class ClientHandler implements Runnable {
     }
 
     private void handleGetMatches() {
-        System.out.println("DEBUG: Đang xử lý GET_MATCHES cho user: " + this.username);
         if (this.username == null) return;
         JSONArray matches = DatabaseService.getMatchesForUser(this.username);
-        System.out.println("DEBUG: Tìm thấy " + matches.length() + " matches.");
         JSONObject response = new JSONObject();
         response.put("status", "MATCH_LIST");
         response.put("matches", matches);
         sendMessage(response.toString());
     }
 
-    private void handleSendMessage(JSONObject request) {
-        if (this.username == null) return;
-        String toUsername = request.getString("to_username");
-        String messageContent = request.getString("content");
-        String type = request.optString("type", "TEXT");
-        DatabaseService.saveMessage(this.username, toUsername, messageContent, type);
-
-        JSONObject message = new JSONObject();
-        message.put("status", "NEW_MESSAGE");
-        message.put("from_username", this.username);
-        message.put("content", messageContent);
-        message.put("type", type);
-
-        ServerApp.sendMessageToUser(toUsername, message.toString());
-    }
-
+    // --- HÀM UPDATE PROFILE ĐÃ CHUẨN HÓA ---
     private void handleUpdateProfile(JSONObject request) {
         if (this.username == null) return;
-        JSONObject profileData = request.getJSONObject("profile");
-        boolean success = DatabaseService.updateUserProfile(this.username, profileData);
+
+        System.out.println(">>> Đang xử lý update cho: " + this.username);
+
+        // 1. Xác định cục dữ liệu chứa thông tin
+        JSONObject rawData;
+        if (request.has("profile")) {
+            rawData = request.getJSONObject("profile");
+        } else {
+            rawData = request;
+        }
+
+        // 2. TẠO RA MỘT OBJECT SẠCH (Chỉ chứa thông tin profile thực sự)
+        JSONObject cleanProfileData = new JSONObject();
+
+        // Danh sách các trường được phép update (Phải khớp với Client gửi lên và cột trong Database)
+        String[] allowedKeys = {
+                "full_name", "age", "gender", "seeking", "bio",
+                "interests", "habits", "relationship_status",
+                "photo1", "photo2", "photo3", "photo4",
+                "address", "dob" // Thêm các trường khác nếu DB có
+        };
+
+        for (String key : allowedKeys) {
+            if (rawData.has(key)) {
+                cleanProfileData.put(key, rawData.get(key));
+            }
+        }
+
+        System.out.println(">>> Dữ liệu sạch chuẩn bị lưu DB: " + cleanProfileData.toString());
+
+        // 3. Gọi Database update
+        boolean success = false;
+        if (cleanProfileData.length() > 0) {
+            success = DatabaseService.updateUserProfile(this.username, cleanProfileData);
+        } else {
+            System.out.println(">>> Không có dữ liệu hợp lệ (trùng khớp key) để update!");
+        }
+
+        // 4. Phản hồi client
         JSONObject response = new JSONObject();
         response.put("status", success ? "UPDATE_SUCCESS" : "UPDATE_FAIL");
+        if (!success) response.put("message", "Lỗi SQL hoặc dữ liệu rỗng");
         sendMessage(response.toString());
     }
+    // ----------------------------------------
 
     public void sendMessage(String jsonMessage) {
         out.println(jsonMessage);

@@ -3,6 +3,8 @@ package client.controllers;
 import client.ClientApp;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
@@ -36,13 +38,21 @@ public class HomeController {
 
     public void initData() {
         JSONObject myProfile = ClientApp.getInstance().getUserProfile();
+
+        // 1. Hiển thị thông tin của CHÍNH MÌNH ở góc trái
         if (myProfile != null) {
-            myFullNameLabel.setText(myProfile.getString("full_name"));
-        } else {
-            myFullNameLabel.setText("Người dùng");
+            myFullNameLabel.setText(myProfile.optString("full_name", "Tôi"));
+
+            // Load Avatar nhỏ
+            String avatarPath = "images/" + myProfile.optString("photo1", "default_avatar.png");
+            try {
+                File file = new File(avatarPath);
+                Image img = file.exists() ? new Image(file.toURI().toString()) : new Image("file:images/default_avatar.png");
+                myAvatarCircle.setFill(new ImagePattern(img));
+            } catch (Exception e) { e.printStackTrace(); }
         }
 
-
+        // 2. Bo tròn ảnh thẻ quẹt (Card)
         if (profileImageView != null) {
             javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
             clip.widthProperty().bind(profileImageView.fitWidthProperty());
@@ -51,13 +61,8 @@ public class HomeController {
             clip.setArcHeight(30);
             profileImageView.setClip(clip);
         }
-        String avatarPath = "images/" + myProfile.optString("photo1", "default_avatar.png");
-        try {
-            File file = new File(avatarPath);
-            if (file.exists()) {
-                myAvatarCircle.setFill(new ImagePattern(new Image(file.toURI().toString())));
-            }
-        } catch (Exception e) {}
+
+        // 3. Tải danh sách người lạ để quẹt
         loadProfiles();
     }
 
@@ -66,14 +71,13 @@ public class HomeController {
         ClientApp.getInstance().getNetworkClient().sendRequest(req);
     }
 
+    // --- SỰ KIỆN: Click vào ảnh để đổi ảnh (Trái/Phải) ---
     @FXML
     private void handleCardClick(MouseEvent event) {
         if (profileQueue.isEmpty() || cardContainer == null) return;
 
         double width = cardContainer.getWidth();
         double clickX = event.getX();
-
-        System.out.println("Click tại: " + clickX + " / " + width);
 
         if (clickX < width / 2) {
             prevPhoto();
@@ -82,13 +86,11 @@ public class HomeController {
         }
     }
 
-    // --- CÁC HÀM CHUYỂN ẢNH ---
     private void prevPhoto() {
         if (currentPhotos[0] == null) return;
         currentPhotoIndex--;
         if (currentPhotoIndex < 0) currentPhotoIndex = 3;
 
-        // Bỏ qua ảnh rỗng
         int attempts = 0;
         while ((currentPhotos[currentPhotoIndex] == null || currentPhotos[currentPhotoIndex].isEmpty()) && attempts < 4) {
             currentPhotoIndex--;
@@ -103,7 +105,6 @@ public class HomeController {
         currentPhotoIndex++;
         if (currentPhotoIndex > 3) currentPhotoIndex = 0;
 
-        // Bỏ qua ảnh rỗng
         int attempts = 0;
         while ((currentPhotos[currentPhotoIndex] == null || currentPhotos[currentPhotoIndex].isEmpty()) && attempts < 4) {
             currentPhotoIndex++;
@@ -119,8 +120,9 @@ public class HomeController {
             try {
                 File file = new File("images/" + photoName);
                 if (file.exists()) {
-                    Image image = new Image(file.toURI().toString());
-                    profileImageView.setImage(image);
+                    profileImageView.setImage(new Image(file.toURI().toString()));
+                } else {
+                    profileImageView.setImage(null);
                 }
             } catch (Exception e) { e.printStackTrace(); }
         } else { profileImageView.setImage(null); }
@@ -138,9 +140,19 @@ public class HomeController {
                 }
                 currentProfileIndex = -1;
                 showNextProfile();
-            } else if ("NEW_MATCH".equals(status)) {
+            }
+            else if ("NEW_MATCH".equals(status)) {
+                // Khi có Match mới, hiện thông báo hoặc thêm vào list
                 JSONObject profile = response.getJSONObject("profile");
-                matchesListView.getItems().add(profile.getString("full_name"));
+                // matchesListView.getItems().add(profile.getString("full_name")); // (Optional)
+            }
+            else if ("REFRESH_SUCCESS".equals(status)) {
+                loadProfiles(); // Tải lại danh sách sau khi reset
+            }
+            else if ("MY_PROFILE_UPDATED".equals(status)) {
+                // Nếu vừa sửa profile xong thì update lại avatar góc trái
+                ClientApp.getInstance().updateUserProfileLocal(response.getJSONObject("profile"));
+                initData();
             }
         });
     }
@@ -149,7 +161,11 @@ public class HomeController {
         currentProfileIndex++;
         if (currentProfileIndex < profileQueue.size()) {
             JSONObject profile = profileQueue.get(currentProfileIndex);
-            nameAgeLabel.setText(profile.getString("full_name") + ", " + profile.getInt("age"));
+
+            String name = profile.optString("full_name", "No Name");
+            int age = profile.optInt("age", 18);
+            nameAgeLabel.setText(name + ", " + age);
+
             bioLabel.setText(profile.optString("bio", ""));
 
             currentPhotos[0] = profile.optString("photo1", null);
@@ -167,8 +183,10 @@ public class HomeController {
         }
     }
 
-    // --- CÁC HÀM NÚT BẤM KHÁC ---
-    @FXML private void handleRefresh() {
+    // --- CÁC HÀM NÚT BẤM ---
+
+    @FXML
+    private void handleRefresh() {
         JSONObject req = new JSONObject().put("action", "REFRESH_PROFILES_CLEAR_NOPED");
         ClientApp.getInstance().getNetworkClient().sendRequest(req);
         nameAgeLabel.setText("Đang làm mới...");
@@ -187,6 +205,29 @@ public class HomeController {
         }
     }
 
-    @FXML private void goToProfile() { ClientApp.getInstance().switchScene("ProfileView.fxml"); }
+    // --- SỬA LOGIC CHUYỂN TRANG PROFILE ---
+    @FXML
+    private void goToProfile() {
+        try {
+            // 1. Lấy dữ liệu của MÌNH
+            JSONObject myProfile = ClientApp.getInstance().getUserProfile();
+            if (myProfile == null) return;
+
+            // 2. Load FXML thủ công
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/views/ProfileView.fxml"));
+            Parent root = loader.load();
+
+            // 3. Lấy Controller và truyền dữ liệu
+            ProfileController ctrl = loader.getController();
+            ctrl.setupProfile(myProfile, true); // true = Là của tôi
+
+            // 4. Chuyển cảnh
+            ClientApp.getInstance().getPrimaryStage().getScene().setRoot(root);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML private void goToMessages() { ClientApp.getInstance().switchScene("MessagesView.fxml"); }
 }
